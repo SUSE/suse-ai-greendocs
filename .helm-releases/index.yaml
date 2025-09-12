@@ -1,0 +1,35 @@
+apiVersion: v1
+entries:
+  suse-ai-hr-assistant:
+  - apiVersion: v2
+    appVersion: latest
+    created: "2025-09-12T00:38:19.834943775Z"
+    dependencies:
+    - condition: ollama.enabled
+      name: ollama
+      repository: oci://dp.apps.rancher.io/charts
+      version: 1.26.0
+    description: SUSE AI HR Assistant Demo - Comprehensive LLM Observability with
+      OpenLit and SUSE AI
+    digest: 726944bf478d959c693a96e77430b58e0056a17cc87caff163c0f756b42c4a57
+    home: https://www.suse.com/products/ai/
+    keywords:
+    - ai
+    - llm
+    - observability
+    - hr
+    - demo
+    - openlit
+    - ollama
+    maintainers:
+    - email: ai-team@suse.com
+      name: SUSE AI Team
+    name: suse-ai-hr-assistant
+    sources:
+    - https://github.com/openlit/openlit
+    - https://ollama.ai/
+    type: application
+    urls:
+    - suse-ai-hr-assistant-0.1.1.tgz
+    version: 0.1.1
+generated: "2025-09-12T00:38:19.832764011Z"
