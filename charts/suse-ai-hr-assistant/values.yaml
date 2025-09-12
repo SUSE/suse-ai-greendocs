@@ -1,0 +1,97 @@
+# SUSE AI HR Assistant Demo Configuration
+# Showcases comprehensive LLM observability with OpenLit integration
+
+# Global configuration
+imagePullSecrets:
+  - name: application-collection
+
+# Observability endpoints
+otlpEndpoint: 'http://opentelemetry-collector.observability.svc.cluster.local:4318'
+ollamaEndpoint: 'http://ollama:11434'
+collectGpuStats: 'true'  # Enable GPU metrics for demo
+
+# CronJob schedule for automated requests (demo traffic generation)
+schedule: '*/5 * * * *'
+
+# SUSE Application Collection Ollama configuration
+ollama:
+  enabled: true
+  image:
+    tag: "0.11.4"
+  imagePullSecrets:
+    - name: application-collection
+  gpu:
+    enabled: true
+    type: "nvidia"
+    number: 1
+  hardware:
+    type: "nvidia"
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "2Gi"
+    limits:
+      cpu: "4"
+      memory: "16Gi"
+  persistence:
+    enabled: false
+    size: 10Gi
+  models:
+    - llama3.2:latest
+    - bge-large:latest
+
+# Application deployment configuration
+replicaCount: 1
+
+# Container image configuration
+image:
+  repository: ghcr.io/wiredquill/llm-experiments/genai-demo
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+# Chart naming
+nameOverride: ""
+fullnameOverride: ""
+
+# Service account configuration
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+# Pod configuration
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 8000
+
+# Resource limits
+resources:
+  requests:
+    memory: '800Mi'
+    cpu: '400m'
+  limits:
+    memory: '1000Mi'
+    cpu: '600m'
+
+# Node selection
+nodeSelector: {}
+tolerations: []
+
+# Ingress configuration (optional for external access)
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: hr-assistant.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
