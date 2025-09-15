@@ -3,7 +3,38 @@ entries:
   suse-ai-hr-assistant:
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-15T19:43:02.116940916Z"
+    created: "2025-09-15T21:07:02.487952638Z"
+    dependencies:
+    - condition: ollama.enabled
+      name: ollama
+      repository: oci://dp.apps.rancher.io/charts
+      version: 1.26.0
+    description: SUSE AI HR Assistant Demo - Comprehensive LLM Observability with
+      OpenLit and SUSE AI
+    digest: 549007980f2039d83b53f45e4fe67716d28beec465b0115e369a783bfe477394
+    home: https://www.suse.com/products/ai/
+    keywords:
+    - ai
+    - llm
+    - observability
+    - hr
+    - demo
+    - openlit
+    - ollama
+    maintainers:
+    - email: ai-team@suse.com
+      name: SUSE AI Team
+    name: suse-ai-hr-assistant
+    sources:
+    - https://github.com/openlit/openlit
+    - https://ollama.ai/
+    type: application
+    urls:
+    - suse-ai-hr-assistant-0.1.9.tgz
+    version: 0.1.9
+  - apiVersion: v2
+    appVersion: latest
+    created: "2025-09-15T21:07:02.485493632Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -34,7 +65,7 @@ entries:
     version: 0.1.7
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-15T19:43:02.115046461Z"
+    created: "2025-09-15T21:07:02.483575822Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -65,7 +96,7 @@ entries:
     version: 0.1.5
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-15T19:43:02.113141656Z"
+    created: "2025-09-15T21:07:02.481639929Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -96,7 +127,7 @@ entries:
     version: 0.1.3
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-15T19:43:02.10994124Z"
+    created: "2025-09-15T21:07:02.478790523Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -125,4 +156,4 @@ entries:
     urls:
     - suse-ai-hr-assistant-0.1.1.tgz
     version: 0.1.1
-generated: "2025-09-15T19:43:02.107849645Z"
+generated: "2025-09-15T21:07:02.476729194Z"
