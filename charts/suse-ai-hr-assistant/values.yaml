@@ -7,8 +7,8 @@ imagePullSecrets:
 
 # Observability endpoints
 otlpEndpoint: 'http://opentelemetry-collector.observability.svc.cluster.local:4318'
-ollamaEndpoint: 'http://ollama:11434'
-collectGpuStats: 'true'  # Enable GPU metrics for demo
+ollamaEndpoint: 'http://test-hr-ollama:11434'
+collectGpuStats: 'false'  # Disable GPU metrics to prevent errors
 
 # CronJob schedule for automated requests (demo traffic generation)
 schedule: '*/5 * * * *'
@@ -37,8 +37,9 @@ ollama:
     enabled: false
     size: 10Gi
   models:
-    - llama3.2:latest
-    - bge-large:latest
+    pull:
+      - llama3.2:latest
+      - bge-large:latest
 
 # Application deployment configuration
 replicaCount: 1
