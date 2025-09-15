@@ -9,7 +9,7 @@ entries:
           name: bci-busybox
     apiVersion: v2
     appVersion: 0.11.4
-    created: "2025-09-15T10:43:29.362952-07:00"
+    created: "2025-09-15T10:52:53.613861-07:00"
     description: Get up and running with Llama 3.2, Mistral, Gemma 2, and other large
       language models.
     digest: 35d0eb96d2de03c99452fa8b1cf3cfaa4b42df620d44ff0eb94e9e61a2e81036
@@ -29,12 +29,43 @@ entries:
     - https://github.com/ollama/ollama
     type: application
     urls:
-    - https://github.com/SUSE/suse-ai-greendocs/raw/charts-for-ai-demo-apps/charts/ollama-1.26.0.tgz
+    - https://raw.githubusercontent.com/SUSE/suse-ai-greendocs/charts-for-ai-demo-apps/charts/ollama-1.26.0.tgz
     version: 1.26.0
   suse-ai-hr-assistant:
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-15T10:43:29.365052-07:00"
+    created: "2025-09-15T10:52:53.616826-07:00"
+    dependencies:
+    - condition: ollama.enabled
+      name: ollama
+      repository: oci://dp.apps.rancher.io/charts
+      version: 1.26.0
+    description: SUSE AI HR Assistant Demo - Comprehensive LLM Observability with
+      OpenLit and SUSE AI
+    digest: 42619db53f949dce70867ae04176796d3063617f50c619d15a15cb436511efbc
+    home: https://www.suse.com/products/ai/
+    keywords:
+    - ai
+    - llm
+    - observability
+    - hr
+    - demo
+    - openlit
+    - ollama
+    maintainers:
+    - email: ai-team@suse.com
+      name: SUSE AI Team
+    name: suse-ai-hr-assistant
+    sources:
+    - https://github.com/openlit/openlit
+    - https://ollama.ai/
+    type: application
+    urls:
+    - https://raw.githubusercontent.com/SUSE/suse-ai-greendocs/charts-for-ai-demo-apps/charts/suse-ai-hr-assistant-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v2
+    appVersion: latest
+    created: "2025-09-15T10:52:53.615128-07:00"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -61,6 +92,6 @@ entries:
     - https://ollama.ai/
     type: application
     urls:
-    - https://github.com/SUSE/suse-ai-greendocs/raw/charts-for-ai-demo-apps/charts/suse-ai-hr-assistant-0.1.3.tgz
+    - https://raw.githubusercontent.com/SUSE/suse-ai-greendocs/charts-for-ai-demo-apps/charts/suse-ai-hr-assistant-0.1.3.tgz
     version: 0.1.3
-generated: "2025-09-15T10:43:29.361882-07:00"
+generated: "2025-09-15T10:52:53.612834-07:00"

@@ -1,0 +1,151 @@
+categories:
+- AI/ML
+- Observability
+- Demo
+questions:
+# Basic Configuration
+- variable: replicaCount
+  default: 1
+  description: "Number of application replicas"
+  type: int
+  min: 1
+  max: 5
+  label: Replica Count
+  group: "Application Configuration"
+
+# Observability Settings
+- variable: otlpEndpoint
+  default: "http://opentelemetry-collector.observability.svc.cluster.local:4318"
+  description: "OpenTelemetry collector endpoint for traces and metrics"
+  type: string
+  label: OTLP Endpoint
+  group: "Observability Configuration"
+
+- variable: collectGpuStats
+  default: true
+  description: "Enable GPU metrics collection for demo purposes"
+  type: boolean
+  label: Collect GPU Statistics
+  group: "Observability Configuration"
+
+# Ollama Configuration
+- variable: ollama.enabled
+  default: true
+  description: "Deploy Ollama for local LLM inference"
+  type: boolean
+  label: Enable Ollama
+  group: "LLM Configuration"
+
+- variable: ollamaEndpoint
+  default: "http://ollama:11434"
+  description: "Ollama API endpoint URL"
+  type: string
+  label: Ollama Endpoint
+  group: "LLM Configuration"
+  show_if: "ollama.enabled=true"
+
+- variable: ollama.gpu.enabled
+  default: true
+  description: "Enable GPU acceleration for Ollama"
+  type: boolean
+  label: Enable GPU for Ollama
+  group: "LLM Configuration"
+  show_if: "ollama.enabled=true"
+
+- variable: ollama.gpu.number
+  default: 1
+  description: "Number of GPUs to allocate to Ollama"
+  type: int
+  min: 1
+  max: 4
+  label: GPU Count
+  group: "LLM Configuration"
+  show_if: "ollama.enabled=true&&ollama.gpu.enabled=true"
+
+# Demo Configuration
+- variable: schedule
+  default: "*/5 * * * *"
+  description: "CronJob schedule for automated demo traffic generation"
+  type: string
+  label: Demo Traffic Schedule
+  group: "Demo Configuration"
+
+# Resource Configuration
+- variable: resources.requests.memory
+  default: "800Mi"
+  description: "Memory request for HR application pods"
+  type: string
+  label: Memory Request
+  group: "Resource Configuration"
+
+- variable: resources.requests.cpu
+  default: "400m"
+  description: "CPU request for HR application pods"
+  type: string
+  label: CPU Request
+  group: "Resource Configuration"
+
+- variable: resources.limits.memory
+  default: "1000Mi"
+  description: "Memory limit for HR application pods"
+  type: string
+  label: Memory Limit
+  group: "Resource Configuration"
+
+- variable: resources.limits.cpu
+  default: "600m"
+  description: "CPU limit for HR application pods"
+  type: string
+  label: CPU Limit
+  group: "Resource Configuration"
+
+# Ollama Resource Configuration
+- variable: ollama.resources.requests.memory
+  default: "2Gi"
+  description: "Memory request for Ollama pods"
+  type: string
+  label: Ollama Memory Request
+  group: "Resource Configuration"
+  show_if: "ollama.enabled=true"
+
+- variable: ollama.resources.limits.memory
+  default: "16Gi"
+  description: "Memory limit for Ollama pods"
+  type: string
+  label: Ollama Memory Limit
+  group: "Resource Configuration"
+  show_if: "ollama.enabled=true"
+
+# Models Configuration
+- variable: ollama.models[0]
+  default: "llama3.2:latest"
+  description: "Primary LLM model to download"
+  type: string
+  label: Primary Model
+  group: "Model Configuration"
+  show_if: "ollama.enabled=true"
+
+- variable: ollama.models[1]
+  default: "bge-large:latest"
+  description: "Embedding model for RAG operations"
+  type: string
+  label: Embedding Model
+  group: "Model Configuration"
+  show_if: "ollama.enabled=true"
+
+# Storage Configuration
+- variable: ollama.persistence.enabled
+  default: false
+  description: "Enable persistent storage for Ollama models"
+  type: boolean
+  label: Enable Persistent Storage
+  group: "Storage Configuration"
+  show_if: "ollama.enabled=true"
+
+- variable: ollama.persistence.size
+  default: "10Gi"
+  description: "Size of persistent volume for Ollama models"
+  type: string
+  label: Storage Size
+  group: "Storage Configuration"
+  show_if: "ollama.enabled=true&&ollama.persistence.enabled=true"
