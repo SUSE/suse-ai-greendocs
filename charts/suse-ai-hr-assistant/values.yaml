@@ -37,7 +37,6 @@ ollama:
     enabled: false
     size: 10Gi
   models:
-    pull:
       - llama3.2:latest
       - bge-large:latest
 
