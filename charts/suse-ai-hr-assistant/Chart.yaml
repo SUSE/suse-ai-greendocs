@@ -2,7 +2,7 @@ apiVersion: v2
 name: suse-ai-hr-assistant
 description: SUSE AI HR Assistant Demo - Comprehensive LLM Observability with OpenLit and SUSE AI
 type: application
-version: 0.1.7
+version: 0.1.8
 appVersion: "latest"
 # Dependencies from SUSE Application Collection
 dependencies:
