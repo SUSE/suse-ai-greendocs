@@ -7,13 +7,6 @@ questions:
   default: "http://opentelemetry-collector.observability.svc.cluster.local:4318"
   group: General
 
-- variable: ollamaEndpoint
-  label: "SUSE AI Engine Endpoint"
-  type: string
-  description: "The URL for the SUSE AI Engine service - Include http:// and port."
-  required: true
-  default: "http://suse-ai-engine:11434"
-  group: General
 
 - variable: ollama.gpu.enabled
   group: General
