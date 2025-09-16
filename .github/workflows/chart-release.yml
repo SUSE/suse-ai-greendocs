@@ -24,6 +24,11 @@ on:
           - minor
           - major
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
