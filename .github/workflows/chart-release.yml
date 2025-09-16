@@ -133,7 +133,21 @@ jobs:
           helm package charts/${{ matrix.chart }} -d .helm-releases/
           echo "Packaged chart: ${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz"
 
-      - name: Generate chart index
+      - name: Copy chart to charts directory
+        run: |
+          cp .helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz charts/
+          echo "Copied chart to charts/ directory"
+
+      - name: Update charts index
+        run: |
+          if [ -f charts/index.yaml ]; then
+            helm repo index charts --merge charts/index.yaml
+          else
+            helm repo index charts
+          fi
+          echo "Updated charts/index.yaml"
+
+      - name: Generate release index
         run: |
           mkdir -p .helm-releases
           if [ -f .helm-releases/index.yaml ]; then
@@ -145,6 +159,8 @@ jobs:
       - name: Commit and push changes
         run: |
           git add charts/${{ matrix.chart }}/Chart.yaml
+          git add charts/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz
+          git add charts/index.yaml
           git add .helm-releases/
           git commit -m "🚀 Release ${{ matrix.chart }} v${{ steps.new-version.outputs.new }}
           
