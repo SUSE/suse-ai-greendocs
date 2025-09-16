@@ -86,6 +86,14 @@ jobs:
         with:
           version: '3.14.0'
 
+      - name: Setup chart dependencies
+        run: |
+          # Copy existing ollama chart to dependencies if it exists
+          if [ -f charts/ollama-1.26.0.tgz ]; then
+            mkdir -p charts/${{ matrix.chart }}/charts/
+            cp charts/ollama-1.26.0.tgz charts/${{ matrix.chart }}/charts/
+          fi
+
       - name: Get current chart version
         id: current-version
         run: |
