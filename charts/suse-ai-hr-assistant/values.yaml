@@ -19,23 +19,31 @@ ollama:
     tag: "0.11.4"
   imagePullSecrets:
     - name: application-collection
+  # GPU Configuration for NVIDIA
+  runtimeClassName: nvidia
   gpu:
     enabled: true
     type: "nvidia"
     number: 1
   hardware:
     type: "nvidia"
+  # Node selector to ensure GPU node scheduling
+  nodeSelector:
+    "kubernetes.io/hostname": "node-gpu"
   resources:
     requests:
       cpu: "500m"
       memory: "2Gi"
+      "nvidia.com/gpu": 1
     limits:
       cpu: "4"
       memory: "16Gi"
+      "nvidia.com/gpu": 1
   persistence:
     enabled: false
     size: 10Gi
   models:
+    pull:
       - llama3.2:latest
       - bge-large:latest
 
