@@ -60,3 +60,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create the ollama endpoint URL based on release name
+*/}}
+{{- define "suse-ai-hr-assistant.ollamaEndpoint" -}}
+http://{{ .Release.Name }}-ollama:11434
+{{- end }}
