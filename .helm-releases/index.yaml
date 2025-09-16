@@ -3,7 +3,38 @@ entries:
   suse-ai-hr-assistant:
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-16T02:29:50.950127435Z"
+    created: "2025-09-16T02:53:10.846954128Z"
+    dependencies:
+    - condition: ollama.enabled
+      name: ollama
+      repository: oci://dp.apps.rancher.io/charts
+      version: 1.26.0
+    description: SUSE AI HR Assistant Demo - Comprehensive LLM Observability with
+      OpenLit and SUSE AI
+    digest: d23a3739971f183621420257a989245bb41803efaf556ae86c53facfbc537141
+    home: https://www.suse.com/products/ai/
+    keywords:
+    - ai
+    - llm
+    - observability
+    - hr
+    - demo
+    - openlit
+    - ollama
+    maintainers:
+    - email: ai-team@suse.com
+      name: SUSE AI Team
+    name: suse-ai-hr-assistant
+    sources:
+    - https://github.com/openlit/openlit
+    - https://ollama.ai/
+    type: application
+    urls:
+    - suse-ai-hr-assistant-0.2.3.tgz
+    version: 0.2.3
+  - apiVersion: v2
+    appVersion: latest
+    created: "2025-09-16T02:53:10.845084851Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -34,7 +65,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-16T02:29:50.948281184Z"
+    created: "2025-09-16T02:53:10.843195737Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -65,7 +96,7 @@ entries:
     version: 0.1.9
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-16T02:29:50.94573216Z"
+    created: "2025-09-16T02:53:10.840711123Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -96,7 +127,7 @@ entries:
     version: 0.1.7
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-16T02:29:50.943874177Z"
+    created: "2025-09-16T02:53:10.838818231Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -127,7 +158,7 @@ entries:
     version: 0.1.5
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-16T02:29:50.941889205Z"
+    created: "2025-09-16T02:53:10.836915421Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -158,7 +189,7 @@ entries:
     version: 0.1.3
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-16T02:29:50.939223472Z"
+    created: "2025-09-16T02:53:10.834293062Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -187,4 +218,4 @@ entries:
     urls:
     - suse-ai-hr-assistant-0.1.1.tgz
     version: 0.1.1
-generated: "2025-09-16T02:29:50.937164751Z"
+generated: "2025-09-16T02:53:10.832143319Z"
