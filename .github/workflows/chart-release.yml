@@ -151,40 +151,27 @@ jobs:
           git push origin ${{ github.ref_name }}
 
       - name: Create GitHub Release
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ matrix.chart }}-v${{ steps.new-version.outputs.new }}
-          release_name: ${{ matrix.chart }} v${{ steps.new-version.outputs.new }}
-          body: |
-            ## ${{ matrix.chart }} v${{ steps.new-version.outputs.new }}
-            
+        run: |
+          gh release create ${{ matrix.chart }}-v${{ steps.new-version.outputs.new }} \
+            --title "${{ matrix.chart }} v${{ steps.new-version.outputs.new }}" \
+            --notes "## ${{ matrix.chart }} v${{ steps.new-version.outputs.new }}
+
             ### Changes
             - Automated release of ${{ matrix.chart }}
             - Version bump: ${{ steps.current-version.outputs.current }} → ${{ steps.new-version.outputs.new }}
-            
+
             ### Installation
-            ```bash
+            \`\`\`bash
             helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs
             helm repo update
             helm install my-release suse-ai-greendocs/${{ matrix.chart }} --version ${{ steps.new-version.outputs.new }}
-            ```
-            
-            ### Chart Archive
-            - 📦 [${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz](.helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz)
-          draft: false
-          prerelease: false
+            \`\`\`
 
-      - name: Upload chart archive to release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: .helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz
-          asset_name: ${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz
-          asset_content_type: application/gzip
+            ### Chart Archive
+            - 📦 [${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz](.helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz)" \
+            .helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz
 
   publish-pages:
     needs: release-charts
