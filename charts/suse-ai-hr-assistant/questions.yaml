@@ -7,6 +7,13 @@ questions:
   default: "http://opentelemetry-collector.suse-observability.svc.cluster.local:4318"
   group: General
 
+- variable: ollama.enabled
+  group: General
+  label: "Enable Ollama Deployment"
+  description: "If true, Ollama will be deployed as part of this chart."
+  type: "boolean"
+  default: true
+
 - variable: ollamaEndpoint
   label: "Ollama Endpoint"
   type: string
@@ -14,6 +21,7 @@ questions:
   required: true
   default: "http://ollama:11434"
   group: General
+  show_if: "ollama.enabled=false"
 
 - variable: ollama.gpu.enabled
   group: General
@@ -21,21 +29,7 @@ questions:
   description: "Requires a node with NVIDIA drivers and the k8s device plugin installed."
   type: "boolean"
   default: false
-  show_if: "ollama.enabled=true && ollama.hardware.type=nvidia"
-
-- variable: ollama.hardware.type
-  group: General
-  label: "Target Hardware for Ollama"
-  description: "Select the target hardware architecture for the Ollama deployment."
-  type: "enum"
-  required: true
-  default: "nvidia"
   show_if: "ollama.enabled=true"
-  options:
-    - label: "NVIDIA GPU (amd64)"
-      value: "nvidia"
-    - label: "Apple Silicon / CPU (arm64)"
-      value: "apple"
 
 - variable: collectGpuStats
   label: "Collect GPU Stats"
@@ -44,16 +38,10 @@ questions:
   description: "Set to 'true' to collect GPU stats"
   required: true
   group: General
-
-- variable: ollama.enabled
-  group: "Ollama Deployment"
-  label: "Enable Ollama Deployment"
-  description: "If true, Ollama will be deployed as part of this chart."
-  type: "boolean"
-  default: true
+  show_if: "ollama.gpu.enabled=true"
 
 - variable: ollama.models[0]
-  group: "Ollama Deployment"
+  group: "Ollama Configuration"
   label: "Primary Ollama Model"
   description: "The primary Ollama model to pull (e.g., 'llama3.2:latest', 'tinyllama:latest')."
   type: "string"
@@ -61,15 +49,15 @@ questions:
   show_if: "ollama.enabled=true"
 
 - variable: ollama.models[1]
-  group: "Ollama Deployment"
+  group: "Ollama Configuration"
   label: "Secondary Ollama Model"
   description: "Additional model for embeddings (optional)."
-  type: "string"  
+  type: "string"
   default: "bge-large:latest"
   show_if: "ollama.enabled=true"
 
 - variable: ollama.service.type
-  group: "Ollama Deployment"
+  group: "Ollama Configuration"
   label: "Ollama Service Type"
   description: "Method to expose the Ollama service. 'ClusterIP' is recommended."
   type: "enum"
@@ -81,9 +69,8 @@ questions:
     - "NodePort"
     - "LoadBalancer"
 
-
 - variable: ollama.resources.requests.cpu
-  group: "Ollama Deployment"
+  group: "Ollama Resources"
   label: "Ollama CPU Request"
   description: "The amount of CPU to reserve for the main Ollama container (e.g., '500m', '1')."
   type: "string"
@@ -91,7 +78,7 @@ questions:
   show_if: "ollama.enabled=true"
 
 - variable: ollama.resources.requests.memory
-  group: "Ollama Deployment"
+  group: "Ollama Resources"
   label: "Ollama Memory Request"
   description: "The amount of memory to reserve for the main Ollama container (e.g., '1Gi', '2048Mi')."
   type: "string"
@@ -99,7 +86,7 @@ questions:
   show_if: "ollama.enabled=true"
 
 - variable: ollama.resources.limits.cpu
-  group: "Ollama Deployment"
+  group: "Ollama Resources"
   label: "Ollama CPU Limit"
   description: "The maximum amount of CPU the main Ollama container can use."
   type: "string"
@@ -107,7 +94,7 @@ questions:
   show_if: "ollama.enabled=true"
 
 - variable: ollama.resources.limits.memory
-  group: "Ollama Deployment"
+  group: "Ollama Resources"
   label: "Ollama Memory Limit"
   description: "The maximum amount of memory the main Ollama container can use."
   type: "string"
@@ -115,7 +102,7 @@ questions:
   show_if: "ollama.enabled=true"
 
 - variable: ollama.persistence.enabled
-  group: "Ollama Deployment"
+  group: "Ollama Resources"
   label: "Enable Ollama Model Persistence"
   description: "If true, a PersistentVolumeClaim will be created to store Ollama models."
   type: "boolean"
@@ -123,7 +110,7 @@ questions:
   show_if: "ollama.enabled=true"
 
 - variable: ollama.persistence.size
-  group: "Ollama Deployment"
+  group: "Ollama Resources"
   label: "Ollama Model Storage Size"
   description: "The size of the PersistentVolumeClaim for Ollama models (e.g., '10Gi', '50Gi')."
   type: "string"
@@ -131,7 +118,7 @@ questions:
   show_if: "ollama.enabled=true && ollama.persistence.enabled=true"
 
 - variable: ollama.persistence.storageClassName
-  group: "Ollama Deployment"
+  group: "Ollama Resources"
   label: "Ollama Model Storage Class Name"
   description: "The storage class name for the Ollama models PVC. Leave empty to use the default storage class."
   type: "string"
