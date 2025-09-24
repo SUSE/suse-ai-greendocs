@@ -37,7 +37,7 @@ spec:
           - name: APP_NAME
             value: HRPolicyDatabase
           - name: OLLAMA_ENDPOINT
-            value: {{ include "suse-ai-hr-assistant.ollamaEndpoint" . }}
+            value: {{ .Values.ollamaEndpoint }}
           - name: OTLP_ENDPOINT
             value: {{ .Values.otlpEndpoint }}
           - name: COLLECT_GPU_STATS
