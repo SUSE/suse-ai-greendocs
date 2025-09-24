@@ -1,0 +1,99 @@
+{{- if .Values.pipelines.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipelines
+  labels:
+    app: pipelines
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pipelines
+  template:
+    metadata:
+      labels:
+        app: pipelines
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+      {{- if .Values.pipelines.git.enabled }}
+      # Git Sync Init Container - Downloads pipelines from repository
+      - name: git-sync
+        image: alpine/git:latest
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            echo "=== Cloning pipeline repository ==="
+            echo "Repository: {{ .Values.pipelines.git.repo }}"
+            echo "Branch: {{ .Values.pipelines.git.branch }}"
+            echo "Path: {{ .Values.pipelines.git.path }}"
+            
+            # Clone the repository
+            git clone --branch {{ .Values.pipelines.git.branch }} --depth 1 {{ .Values.pipelines.git.repo }} /tmp/repo
+            
+            # Copy pipelines to the shared volume
+            if [ -d "/tmp/repo/{{ .Values.pipelines.git.path }}" ]; then
+              echo "✅ Copying pipelines from repository"
+              cp -r /tmp/repo/{{ .Values.pipelines.git.path }}/* /app/pipelines/
+              ls -la /app/pipelines/
+              echo "✅ Pipeline files copied successfully"
+            else
+              echo "⚠️  Pipeline directory not found in repository"
+              exit 1
+            fi
+        volumeMounts:
+        - name: pipeline-storage
+          mountPath: /app/pipelines
+      {{- end }}
+      containers:
+      - name: pipelines
+        image: "{{ .Values.pipelines.image.repository }}:{{ .Values.pipelines.image.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.pipelines.service.port }}
+          name: http
+        env:
+        - name: PORT
+          value: "{{ .Values.pipelines.service.port }}"
+        - name: PIPELINE_MODE
+          value: "{{ .Values.pipelines.config.pipelineMode }}"
+        - name: LOG_LEVEL
+          value: "{{ .Values.pipelines.config.logLevel }}"
+        - name: PIPELINES_DIR
+          value: "/app/pipelines"
+        # Ollama connection configuration for pipeline backend
+        - name: OLLAMA_BASE_URL
+          value: "http://ollama-service:11434"
+        - name: OLLAMA_API_BASE_URL
+          value: "http://ollama-service:11434"
+        volumeMounts:
+        - name: pipeline-storage
+          mountPath: /app/pipelines
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.pipelines.service.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.pipelines.service.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: pipeline-storage
+        emptyDir: {}
+{{- end }}

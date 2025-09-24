@@ -1,0 +1,41 @@
+{{- if .Values.frontend.loadSimulator.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "ai-compare-opentelemetry.fullname" . }}-load-gen
+  labels:
+    {{- include "ai-compare-opentelemetry.labels" . | nindent 4 }}
+    app.kubernetes.io/component: load-generator
+spec:
+  schedule: "*/2 * * * *"  # Every 2 minutes like HR assistant
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: load-generator
+            image: curlimages/curl:8.4.0
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Generating telemetry request to AI Compare service..."
+              curl -s -X POST \
+                http://{{ include "ai-compare-opentelemetry.fullname" . }}-app-service:8080/api/chat \
+                -H "Content-Type: application/json" \
+                -d '{"message": "Automated telemetry generation for SUSE Observability GenAI Apps visibility"}' \
+                || echo "Request failed, but will retry in 2 minutes"
+              echo "Telemetry request completed"
+            resources:
+              limits:
+                cpu: 50m
+                memory: 64Mi
+              requests:
+                cpu: 25m
+                memory: 32Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            fsGroup: 65532
+{{- end }}

@@ -1,0 +1,15 @@
+{{- if .Values.aiCompare.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "ai-compare.fullname" . }}-app-code-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.aiCompare.persistence.size }}
+  {{- if .Values.aiCompare.persistence.storageClassName }}
+  storageClassName: {{ .Values.aiCompare.persistence.storageClassName }}
+  {{- end }}
+{{- end }}

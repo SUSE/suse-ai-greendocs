@@ -15,6 +15,9 @@ on:
         type: choice
         options:
           - suse-ai-hr-assistant
+          - suse-ai-compare
+          - suse-ai-compare-suse
+          - suse-ai-compare-opentelemetry
       version_bump:
         description: 'Version bump type'
         required: true
@@ -258,6 +261,33 @@ jobs:
                   <p><strong>Installation:</strong></p>
                   <code>helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs</code><br>
                   <code>helm install hr-assistant suse-ai-greendocs/suse-ai-hr-assistant</code>
+              </div>
+
+              <div class="chart">
+                  <h3>suse-ai-compare</h3>
+                  <p>SUSE AI Compare - Enterprise AI response comparison platform with comprehensive observability</p>
+                  <div class="version">Latest version available in index.yaml</div>
+                  <p><strong>Installation:</strong></p>
+                  <code>helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs</code><br>
+                  <code>helm install ai-compare suse-ai-greendocs/suse-ai-compare</code>
+              </div>
+
+              <div class="chart">
+                  <h3>suse-ai-compare-suse</h3>
+                  <p>SUSE AI Compare SUSE Edition - Enterprise-hardened with SUSE BCI containers and NeuVector security</p>
+                  <div class="version">Latest version available in index.yaml</div>
+                  <p><strong>Installation:</strong></p>
+                  <code>helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs</code><br>
+                  <code>helm install ai-compare-suse suse-ai-greendocs/suse-ai-compare-suse</code>
+              </div>
+
+              <div class="chart">
+                  <h3>suse-ai-compare-opentelemetry</h3>
+                  <p>SUSE AI Compare OpenTelemetry Edition - Advanced GenAI observability with token tracking and cost analysis</p>
+                  <div class="version">Latest version available in index.yaml</div>
+                  <p><strong>Installation:</strong></p>
+                  <code>helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs</code><br>
+                  <code>helm install ai-compare-otel suse-ai-greendocs/suse-ai-compare-opentelemetry</code>
               </div>
 
               <h2>Repository Setup</h2>

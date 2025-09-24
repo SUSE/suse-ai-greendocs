@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "ai-compare-opentelemetry.fullname" . }}-test-config"
+  labels:
+    {{- include "ai-compare-opentelemetry.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-weight": "2"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  serviceAccountName: {{ include "ai-compare-opentelemetry.fullname" . }}-service-account
+  containers:
+  - name: config-test
+    image: curlimages/curl:8.5.0
+    command:
+    - /bin/sh
+    - -c
+    - |
+      set -e
+      echo "=== AI Compare Configuration Validation Tests ==="
+      
+      # Test ConfigMap existence
+      echo "Testing ConfigMap availability..."
+      if [ -f /config/config.json ]; then
+        echo "✅ App config is mounted"
+        echo "Config preview:"
+        head -5 /config/config.json
+      else
+        echo "❌ App config not found"
+        exit 1
+      fi
+      
+      # Test model config
+      if [ -n "$MODEL_CONFIG" ]; then
+        echo "✅ Model config environment variable is set: $MODEL_CONFIG"
+      else
+        echo "❌ MODEL_CONFIG environment variable not set"
+        exit 1
+      fi
+      
+      # Test automation config
+      if [ -n "$AUTOMATION_ENABLED" ]; then
+        echo "✅ Automation config is set: $AUTOMATION_ENABLED"
+      else
+        echo "⚠️ AUTOMATION_ENABLED not set (this is optional)"
+      fi
+      
+      # Test observability config (if enabled)
+      {{- if .Values.aiCompare.observability.enabled }}
+      if [ -n "$OBSERVABILITY_ENABLED" ]; then
+        echo "✅ Observability is enabled: $OBSERVABILITY_ENABLED"
+      else
+        echo "❌ OBSERVABILITY_ENABLED should be set when observability is enabled"
+        exit 1
+      fi
+      
+      if [ -n "$OTLP_ENDPOINT" ]; then
+        echo "✅ OTLP endpoint is configured: $OTLP_ENDPOINT"
+      else
+        echo "❌ OTLP_ENDPOINT should be set when observability is enabled"
+        exit 1
+      fi
+      {{- end }}
+      
+      echo "=== All configuration tests passed! ==="
+    env:
+    - name: MODEL_CONFIG
+      valueFrom:
+        configMapKeyRef:
+          name: ai-compare-opentelemetry-config
+          key: MODEL_CONFIG
+    - name: AUTOMATION_ENABLED
+      value: "{{ .Values.aiCompare.automation.enabled }}"
+    {{- if .Values.aiCompare.observability.enabled }}
+    - name: OBSERVABILITY_ENABLED
+      value: "{{ .Values.aiCompare.observability.enabled }}"
+    - name: OTLP_ENDPOINT
+      value: "{{ .Values.aiCompare.observability.otlpEndpoint }}"
+    {{- end }}
+    volumeMounts:
+    - name: config
+      mountPath: /config
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "100m"
+      limits:
+        memory: "128Mi"
+        cpu: "200m"
+  volumes:
+  - name: config
+    configMap:
+      name: app-config
