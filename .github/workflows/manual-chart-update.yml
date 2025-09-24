@@ -1,0 +1,73 @@
+name: Manual Chart Version Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      chart_name:
+        description: 'Chart to update'
+        required: true
+        type: choice
+        options:
+          - suse-ai-hr-assistant
+      new_version:
+        description: 'New version (e.g., 0.1.1)'
+        required: true
+        type: string
+      release_notes:
+        description: 'Release notes'
+        required: false
+        type: string
+        default: 'Manual version update'
+
+jobs:
+  update-chart:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Validate version format
+        run: |
+          if ! echo "${{ github.event.inputs.new_version }}" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Error: Version must be in format x.y.z (e.g., 0.1.1)"
+            exit 1
+          fi
+
+      - name: Update chart version
+        run: |
+          sed -i 's/^version: .*/version: ${{ github.event.inputs.new_version }}/' charts/${{ github.event.inputs.chart_name }}/Chart.yaml
+          echo "Updated ${{ github.event.inputs.chart_name }} to version ${{ github.event.inputs.new_version }}"
+
+      - name: Verify chart validity
+        run: |
+          # Install Helm
+          curl https://get.helm.sh/helm-v3.14.0-linux-amd64.tar.gz | tar xz
+          sudo mv linux-amd64/helm /usr/local/bin/
+          
+          # Lint the chart
+          helm lint charts/${{ github.event.inputs.chart_name }}
+
+      - name: Commit changes
+        run: |
+          git add charts/${{ github.event.inputs.chart_name }}/Chart.yaml
+          git commit -m "📈 Update ${{ github.event.inputs.chart_name }} to v${{ github.event.inputs.new_version }}
+
+          ${{ github.event.inputs.release_notes }}
+          
+          - Chart: ${{ github.event.inputs.chart_name }}
+          - Version: ${{ github.event.inputs.new_version }}
+          - Updated by: ${{ github.actor }}"
+          
+          git push origin ${{ github.ref_name }}
+
+      - name: Summary
+        run: |
+          echo "✅ Successfully updated ${{ github.event.inputs.chart_name }} to version ${{ github.event.inputs.new_version }}"
+          echo "The chart-release.yml workflow will automatically trigger to create the release."

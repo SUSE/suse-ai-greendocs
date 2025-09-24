@@ -1,0 +1,109 @@
+# SUSE AI HR Assistant Demo Configuration
+# Showcases comprehensive LLM observability with OpenLit integration
+
+# Global configuration
+imagePullSecrets:
+  - name: application-collection
+
+# Observability endpoints
+otlpEndpoint: 'http://opentelemetry-collector.observability.svc.cluster.local:4318'
+ollamaEndpoint: 'http://ollama:11434'
+collectGpuStats: 'true'  # Enable GPU metrics for demo
+
+# CronJob schedule for automated requests (demo traffic generation)
+schedule: '*/5 * * * *'
+
+# Official SUSE Application Collection Ollama chart configuration
+ollama:
+  enabled: true
+  image:
+    tag: "0.11.4"
+  imagePullSecrets:
+    - name: application-collection
+  gpu:
+    enabled: true
+    type: "nvidia"
+    number: 1
+  hardware:
+    type: "nvidia"
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "2Gi"
+    limits:
+      cpu: "4"
+      memory: "16Gi"
+  persistence:
+    enabled: false
+    size: 10Gi
+  models:
+    - llama3.2:latest
+    - bge-large:latest
+
+
+    
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: ghcr.io/wiredquill/llm-experiments/genai-demo
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: ClusterIP
+  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  port: 8000
+
+resources:
+  requests:
+    memory: '800Mi'
+    cpu: '400m'
+  limits:
+    memory: '1000Mi'
+    cpu: '600m'
+
+nodeSelector: {}
+
+tolerations: []

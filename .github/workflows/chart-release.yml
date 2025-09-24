@@ -1,0 +1,287 @@
+name: Chart Release and Auto-Update
+
+on:
+  push:
+    paths:
+      - 'charts/**/Chart.yaml'
+    branches:
+      - main
+      - charts-for-ai-demo-apps
+  workflow_dispatch:
+    inputs:
+      chart_name:
+        description: 'Chart name to release'
+        required: true
+        type: choice
+        options:
+          - suse-ai-hr-assistant
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      charts: ${{ steps.changes.outputs.charts }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect chart changes
+        id: changes
+        run: |
+          CHANGED_CHARTS=""
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            CHANGED_CHARTS="${{ github.event.inputs.chart_name }}"
+          else
+            for chart in charts/*/Chart.yaml; do
+              chart_dir=$(dirname "$chart")
+              chart_name=$(basename "$chart_dir")
+              if git diff --name-only HEAD~1 HEAD | grep -q "^${chart_dir}/"; then
+                if [ -n "$CHANGED_CHARTS" ]; then
+                  CHANGED_CHARTS="${CHANGED_CHARTS},${chart_name}"
+                else
+                  CHANGED_CHARTS="$chart_name"
+                fi
+              fi
+            done
+          fi
+          echo "charts=$CHANGED_CHARTS" >> $GITHUB_OUTPUT
+          echo "Detected changed charts: $CHANGED_CHARTS"
+
+  release-charts:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.charts != ''
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        chart: ${{ fromJson(format('["{0}"]', needs.detect-changes.outputs.charts)) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.14.0'
+
+      - name: Setup chart dependencies
+        run: |
+          # Copy existing ollama chart to dependencies if it exists
+          if [ -f charts/ollama-1.26.0.tgz ]; then
+            mkdir -p charts/${{ matrix.chart }}/charts/
+            cp charts/ollama-1.26.0.tgz charts/${{ matrix.chart }}/charts/
+          fi
+
+      - name: Get current chart version
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(yq e '.version' charts/${{ matrix.chart }}/Chart.yaml)
+          echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+
+      - name: Calculate new version
+        id: new-version
+        run: |
+          CURRENT="${{ steps.current-version.outputs.current }}"
+          BUMP_TYPE="${{ github.event.inputs.version_bump || 'patch' }}"
+          
+          IFS='.' read -ra VERSION_PARTS <<< "$CURRENT"
+          MAJOR=${VERSION_PARTS[0]}
+          MINOR=${VERSION_PARTS[1]}
+          PATCH=${VERSION_PARTS[2]}
+          
+          case $BUMP_TYPE in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+          
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION"
+
+      - name: Update chart version
+        run: |
+          yq e '.version = "${{ steps.new-version.outputs.new }}"' -i charts/${{ matrix.chart }}/Chart.yaml
+          echo "Updated Chart.yaml with version ${{ steps.new-version.outputs.new }}"
+
+      - name: Package chart
+        run: |
+          helm package charts/${{ matrix.chart }} -d .helm-releases/
+          echo "Packaged chart: ${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz"
+
+      - name: Copy chart to charts directory
+        run: |
+          cp .helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz charts/
+          echo "Copied chart to charts/ directory"
+
+      - name: Update charts index
+        run: |
+          if [ -f charts/index.yaml ]; then
+            helm repo index charts --merge charts/index.yaml
+          else
+            helm repo index charts
+          fi
+          echo "Updated charts/index.yaml"
+
+      - name: Generate release index
+        run: |
+          mkdir -p .helm-releases
+          if [ -f .helm-releases/index.yaml ]; then
+            helm repo index .helm-releases --merge .helm-releases/index.yaml
+          else
+            helm repo index .helm-releases
+          fi
+
+      - name: Commit and push changes
+        run: |
+          git add charts/${{ matrix.chart }}/Chart.yaml
+          git add charts/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz
+          git add charts/index.yaml
+          git add .helm-releases/
+          git commit -m "🚀 Release ${{ matrix.chart }} v${{ steps.new-version.outputs.new }}
+          
+          - Automated version bump: ${{ github.event.inputs.version_bump || 'patch' }}
+          - Chart: ${{ matrix.chart }}
+          - Previous version: ${{ steps.current-version.outputs.current }}
+          - New version: ${{ steps.new-version.outputs.new }}"
+          
+          git push origin ${{ github.ref_name }}
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ matrix.chart }}-v${{ steps.new-version.outputs.new }} \
+            --title "${{ matrix.chart }} v${{ steps.new-version.outputs.new }}" \
+            --notes "## ${{ matrix.chart }} v${{ steps.new-version.outputs.new }}
+
+            ### Changes
+            - Automated release of ${{ matrix.chart }}
+            - Version bump: ${{ steps.current-version.outputs.current }} → ${{ steps.new-version.outputs.new }}
+
+            ### Installation
+            \`\`\`bash
+            helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs
+            helm repo update
+            helm install my-release suse-ai-greendocs/${{ matrix.chart }} --version ${{ steps.new-version.outputs.new }}
+            \`\`\`
+
+            ### Chart Archive
+            - 📦 [${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz](.helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz)" \
+            .helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz
+
+  publish-pages:
+    needs: release-charts
+    runs-on: ubuntu-latest
+    if: needs.release-charts.result == 'success'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Create index.html for chart repository
+        run: |
+          mkdir -p public
+          cat > public/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>SUSE AI Helm Charts</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 40px; }
+                  .header { border-bottom: 1px solid #eee; padding-bottom: 20px; }
+                  .chart { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+                  .version { color: #666; font-size: 0.9em; }
+                  code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; }
+              </style>
+          </head>
+          <body>
+              <div class="header">
+                  <h1>SUSE AI Helm Charts Repository</h1>
+                  <p>Enterprise-ready AI applications with comprehensive observability.</p>
+              </div>
+              
+              <h2>Available Charts</h2>
+              
+              <div class="chart">
+                  <h3>suse-ai-hr-assistant</h3>
+                  <p>SUSE AI HR Assistant Demo - Comprehensive LLM Observability with OpenLit and SUSE AI</p>
+                  <div class="version">Latest version available in index.yaml</div>
+                  <p><strong>Installation:</strong></p>
+                  <code>helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs</code><br>
+                  <code>helm install hr-assistant suse-ai-greendocs/suse-ai-hr-assistant</code>
+              </div>
+
+              <h2>Repository Setup</h2>
+              <p>Add this repository to Helm:</p>
+              <code>helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs</code><br>
+              <code>helm repo update</code>
+
+              <h2>Chart Index</h2>
+              <p>View the complete chart index: <a href="index.yaml">index.yaml</a></p>
+          </body>
+          </html>
+          EOF
+
+      - name: Copy helm releases to public
+        run: |
+          if [ -d .helm-releases ]; then
+            cp -r .helm-releases/* public/
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
