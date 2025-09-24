@@ -15,3 +15,4 @@ spec:
   selector:
     {{- include "suse-ai-hr-assistant.selectorLabels" . | nindent 4 }}
     app.component: employee-handbook
+

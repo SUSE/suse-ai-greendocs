@@ -7,78 +7,95 @@ imagePullSecrets:
 
 # Observability endpoints
 otlpEndpoint: 'http://opentelemetry-collector.observability.svc.cluster.local:4318'
-collectGpuStats: 'false'  # Disable GPU metrics to prevent errors
+ollamaEndpoint: 'http://ollama:11434'
+collectGpuStats: 'true'  # Enable GPU metrics for demo
 
 # CronJob schedule for automated requests (demo traffic generation)
 schedule: '*/5 * * * *'
 
-# SUSE Application Collection Ollama configuration
+# Official SUSE Application Collection Ollama chart configuration
 ollama:
   enabled: true
   image:
     tag: "0.11.4"
   imagePullSecrets:
     - name: application-collection
-  # GPU Configuration for NVIDIA
-  runtimeClassName: nvidia
   gpu:
     enabled: true
     type: "nvidia"
     number: 1
   hardware:
     type: "nvidia"
-  # Node selector to ensure GPU node scheduling
-  nodeSelector:
-    "kubernetes.io/hostname": "node-gpu"
   resources:
     requests:
       cpu: "500m"
       memory: "2Gi"
-      "nvidia.com/gpu": 1
     limits:
       cpu: "4"
       memory: "16Gi"
-      "nvidia.com/gpu": 1
   persistence:
     enabled: false
     size: 10Gi
   models:
-    pull:
-      - llama3.2:latest
-      - bge-large:latest
+    - llama3.2:latest
+    - bge-large:latest
 
-# Application deployment configuration
+
+    
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
 
-# Container image configuration
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
   repository: ghcr.io/wiredquill/llm-experiments/genai-demo
+  # This sets the pull policy for images.
   pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
-# Chart naming
+# This is to override the chart name.
 nameOverride: ""
 fullnameOverride: ""
 
-# Service account configuration
+
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
+  # Specifies whether a service account should be created
   create: true
+  # Automatically mount a ServiceAccount's API credentials?
   automount: true
+  # Annotations to add to the service account
   annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-# Pod configuration
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
 podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
-podSecurityContext: {}
-securityContext: {}
 
-# Service configuration
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
+  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: ClusterIP
+  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 8000
 
-# Resource limits
 resources:
   requests:
     memory: '800Mi'
@@ -87,18 +104,6 @@ resources:
     memory: '1000Mi'
     cpu: '600m'
 
-# Node selection
 nodeSelector: {}
-tolerations: []
 
-# Ingress configuration (optional for external access)
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-  hosts:
-    - host: hr-assistant.local
-      paths:
-        - path: /
-          pathType: Prefix
-  tls: []
+tolerations: []

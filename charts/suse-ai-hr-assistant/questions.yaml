@@ -4,22 +4,29 @@ questions:
   type: string
   description: "Open Telemetry Endpoint  - Include http:// and port."
   required: true
-  default: "http://opentelemetry-collector.observability.svc.cluster.local:4318"
+  default: "http://opentelemetry-collector.suse-observability.svc.cluster.local:4318"
   group: General
 
+- variable: ollamaEndpoint
+  label: "Ollama Endpoint"
+  type: string
+  description: "The URL for the Ollama service - Include http:// and port."
+  required: true
+  default: "http://ollama:11434"
+  group: General
 
 - variable: ollama.gpu.enabled
   group: General
-  label: "Enable NVIDIA GPU for SUSE AI Engine"
+  label: "Enable NVIDIA GPU Acceleration"
   description: "Requires a node with NVIDIA drivers and the k8s device plugin installed."
   type: "boolean"
-  default: true
+  default: false
   show_if: "ollama.enabled=true && ollama.hardware.type=nvidia"
 
 - variable: ollama.hardware.type
   group: General
-  label: "Target Hardware for SUSE AI Engine"
-  description: "Select the target hardware architecture for the SUSE AI Engine deployment."
+  label: "Target Hardware for Ollama"
+  description: "Select the target hardware architecture for the Ollama deployment."
   type: "enum"
   required: true
   default: "nvidia"
@@ -30,25 +37,32 @@ questions:
     - label: "Apple Silicon / CPU (arm64)"
       value: "apple"
 
+- variable: collectGpuStats
+  label: "Collect GPU Stats"
+  type: string
+  default: "false"
+  description: "Set to 'true' to collect GPU stats"
+  required: true
+  group: General
 
 - variable: ollama.enabled
   group: "Ollama Deployment"
-  label: "Enable SUSE AI Engine Deployment"
-  description: "If true, SUSE AI Engine will be deployed as part of this chart."
+  label: "Enable Ollama Deployment"
+  description: "If true, Ollama will be deployed as part of this chart."
   type: "boolean"
   default: true
 
 - variable: ollama.models[0]
   group: "Ollama Deployment"
-  label: "Primary AI Model"
-  description: "The primary AI model to pull for HR queries (e.g., 'llama3.2:latest', 'tinyllama:latest')."
+  label: "Primary Ollama Model"
+  description: "The primary Ollama model to pull (e.g., 'llama3.2:latest', 'tinyllama:latest')."
   type: "string"
   default: "llama3.2:latest"
   show_if: "ollama.enabled=true"
 
 - variable: ollama.models[1]
   group: "Ollama Deployment"
-  label: "Secondary AI Model"
+  label: "Secondary Ollama Model"
   description: "Additional model for embeddings (optional)."
   type: "string"  
   default: "bge-large:latest"
@@ -56,8 +70,8 @@ questions:
 
 - variable: ollama.service.type
   group: "Ollama Deployment"
-  label: "SUSE AI Engine Service Type"
-  description: "Method to expose the SUSE AI Engine service. 'ClusterIP' is recommended."
+  label: "Ollama Service Type"
+  description: "Method to expose the Ollama service. 'ClusterIP' is recommended."
   type: "enum"
   required: true
   default: "ClusterIP"
@@ -68,67 +82,67 @@ questions:
     - "LoadBalancer"
 
 
-- variable: ollama.persistence.enabled
-  group: "Ollama Deployment"
-  label: "Enable AI Model Persistence"
-  description: "If true, a PersistentVolumeClaim will be created to store AI models."
-  type: "boolean"
-  default: false
-  show_if: "ollama.enabled=true"
-
-- variable: ollama.persistence.size
-  group: "Ollama Deployment"
-  label: "AI Model Storage Size"
-  description: "The size of the PersistentVolumeClaim for AI models (e.g., '10Gi', '50Gi')."
-  type: "string"
-  default: "10Gi"
-  show_if: "ollama.enabled=true && ollama.persistence.enabled=true"
-
-- variable: ollama.persistence.storageClassName
-  group: "Ollama Deployment"
-  label: "AI Model Storage Class Name"
-  description: "The storage class name for the AI models PVC. Leave empty to use the default storage class."
-  type: "string"
-  default: ""
-  show_if: "ollama.enabled=true && ollama.persistence.enabled=true"
-
 - variable: ollama.resources.requests.cpu
   group: "Ollama Deployment"
-  label: "SUSE AI Engine CPU Request"
-  description: "The amount of CPU to reserve for the SUSE AI Engine container (e.g., '500m', '1')."
+  label: "Ollama CPU Request"
+  description: "The amount of CPU to reserve for the main Ollama container (e.g., '500m', '1')."
   type: "string"
   default: "2"
   show_if: "ollama.enabled=true"
 
 - variable: ollama.resources.requests.memory
   group: "Ollama Deployment"
-  label: "SUSE AI Engine Memory Request"
-  description: "The amount of memory to reserve for the SUSE AI Engine container (e.g., '1Gi', '2048Mi')."
+  label: "Ollama Memory Request"
+  description: "The amount of memory to reserve for the main Ollama container (e.g., '1Gi', '2048Mi')."
   type: "string"
   default: "2Gi"
   show_if: "ollama.enabled=true"
 
 - variable: ollama.resources.limits.cpu
   group: "Ollama Deployment"
-  label: "SUSE AI Engine CPU Limit"
-  description: "The maximum amount of CPU the SUSE AI Engine container can use."
+  label: "Ollama CPU Limit"
+  description: "The maximum amount of CPU the main Ollama container can use."
   type: "string"
   default: "4"
   show_if: "ollama.enabled=true"
 
 - variable: ollama.resources.limits.memory
   group: "Ollama Deployment"
-  label: "SUSE AI Engine Memory Limit"
-  description: "The maximum amount of memory the SUSE AI Engine container can use."
+  label: "Ollama Memory Limit"
+  description: "The maximum amount of memory the main Ollama container can use."
   type: "string"
   default: "16Gi"
   show_if: "ollama.enabled=true"
+
+- variable: ollama.persistence.enabled
+  group: "Ollama Deployment"
+  label: "Enable Ollama Model Persistence"
+  description: "If true, a PersistentVolumeClaim will be created to store Ollama models."
+  type: "boolean"
+  default: false
+  show_if: "ollama.enabled=true"
+
+- variable: ollama.persistence.size
+  group: "Ollama Deployment"
+  label: "Ollama Model Storage Size"
+  description: "The size of the PersistentVolumeClaim for Ollama models (e.g., '10Gi', '50Gi')."
+  type: "string"
+  default: "10Gi"
+  show_if: "ollama.enabled=true && ollama.persistence.enabled=true"
+
+- variable: ollama.persistence.storageClassName
+  group: "Ollama Deployment"
+  label: "Ollama Model Storage Class Name"
+  description: "The storage class name for the Ollama models PVC. Leave empty to use the default storage class."
+  type: "string"
+  default: ""
+  show_if: "ollama.enabled=true && ollama.persistence.enabled=true"
 
 
 - variable: schedule
   label: "Schedule"
   type: string
   default: "*/5 * * * *"
-  description: "Cron schedule for HR query simulation requests to demonstrate SUSE AI capabilities"
+  description: "Cron schedule for user simulation request to apps"
   required: true
   group: General

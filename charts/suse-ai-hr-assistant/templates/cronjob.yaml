@@ -1,3 +1,4 @@
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -19,7 +20,7 @@ data:
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "suse-ai-hr-assistant.fullname" . }}-traffic-generator
+  name: {{ include "suse-ai-hr-assistant.fullname" . }}
   labels: 
     {{- include "suse-ai-hr-assistant.labels" . | nindent 4 }}
 spec:
@@ -31,7 +32,7 @@ spec:
       {{- end }}
       labels:
         {{- include "suse-ai-hr-assistant.labels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
+        {{- with .Values.pobLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
@@ -72,7 +73,7 @@ spec:
               name: {{ include "suse-ai-hr-assistant.fullname" . }}-run-script
               defaultMode: 0755
             name: run-script
-  schedule: "{{ .Values.schedule }}"
+  schedule: "{{.Values.schedule}}"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   suspend: false
