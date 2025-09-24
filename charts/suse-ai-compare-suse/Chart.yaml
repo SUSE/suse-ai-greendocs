@@ -1,0 +1,29 @@
+apiVersion: v2
+name: suse-ai-compare-suse
+description: "SUSE AI Compare SUSE Edition - Enterprise AI response comparison platform optimized for SUSE environments. Features SUSE BCI images, native SUSE Observability integration, NeuVector security demos, and full SUSE cloud-native stack compatibility."
+type: application
+version: 0.1.0
+appVersion: "latest"
+keywords:
+  - ai
+  - llm
+  - ollama
+  - machine-learning
+  - suse
+  - enterprise
+  - observability
+  - neuvector
+  - security
+  - demo
+  - bci
+home: https://www.suse.com/products/ai/
+sources:
+  - https://github.com/wiredquill/ai-demos
+maintainers:
+  - name: SUSE AI Team
+    email: ai-team@suse.com
+annotations:
+  category: AI/ML
+  licenses: MIT
+  suse.com/certified: "true"
+  suse.com/bci-images: "true"

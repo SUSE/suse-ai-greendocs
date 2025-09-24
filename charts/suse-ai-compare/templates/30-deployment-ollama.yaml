@@ -1,0 +1,233 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      # --- ADDED RUNTIMECLASSNAME BLOCK ---
+      # This will add runtimeClassName: nvidia only when GPU is enabled for NVIDIA
+      {{- if and .Values.ollama.gpu.enabled (eq .Values.ollama.hardware.type "nvidia") }}
+      runtimeClassName: nvidia
+      {{- end }}
+      
+      
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values:
+                {{- if eq .Values.ollama.hardware.type "apple" }}
+                - arm64
+                {{- else }}
+                - amd64
+                {{- end }}
+      
+      initContainers:
+      {{- if .Values.ollama.modelCache.nfs.enabled }}
+      # NFS Model Cache Init Container
+      # This container checks for cached models on NFS and downloads if needed
+      - name: nfs-model-cache
+        image: "{{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            set -e
+            echo "=== NFS Model Caching System ==="
+            echo "NFS Server: {{ .Values.ollama.modelCache.nfs.server }}"
+            echo "NFS Path: {{ .Values.ollama.modelCache.nfs.path }}"
+            echo "Cache Path: /mnt/nfs-cache"
+            echo "Target Model: tinyllama:latest"
+            
+            MODEL_NAME="tinyllama"
+            MODEL_TAG="latest"
+            CACHE_PATH="/mnt/nfs-cache/${MODEL_NAME}_${MODEL_TAG}"
+            
+            echo "=== Starting Ollama service for model operations ==="
+            ollama serve &
+            OLLAMA_PID=$!
+            sleep 10
+            
+            # Function to cleanup Ollama on exit
+            cleanup() {
+              echo "=== Cleaning up Ollama process ==="
+              kill $OLLAMA_PID 2>/dev/null || true
+              wait $OLLAMA_PID 2>/dev/null || true
+            }
+            trap cleanup EXIT
+            
+            echo "=== Checking NFS cache for model ==="
+            if [ -d "${CACHE_PATH}" ] && [ "$(ls -A ${CACHE_PATH})" ]; then
+              echo "✅ Model found in NFS cache at ${CACHE_PATH}"
+              echo "✅ Copying cached model to local storage - this will be fast!"
+              
+              # Copy from NFS cache to local Ollama directory
+              cp -r "${CACHE_PATH}"/* /root/.ollama/models/ 2>/dev/null || true
+              
+              # Verify model is available
+              if ollama list | grep -q "${MODEL_NAME}:${MODEL_TAG}"; then
+                echo "✅ SUCCESS: Model loaded from NFS cache"
+              else
+                echo "⚠️  Cache corrupted, will download fresh"
+                rm -rf "${CACHE_PATH}" 2>/dev/null || true
+              fi
+            fi
+            
+            # Download model if not in cache or cache was corrupted
+            if ! ollama list | grep -q "${MODEL_NAME}:${MODEL_TAG}"; then
+              echo "⚠️  Model not found in NFS cache, downloading from internet..."
+              echo "⚠️  This will be slow but only happens once per model version"
+              
+              # Download model from internet
+              echo "=== Downloading ${MODEL_NAME}:${MODEL_TAG} from Ollama registry ==="
+              if ollama pull "${MODEL_NAME}:${MODEL_TAG}"; then
+                echo "✅ Model downloaded successfully"
+                
+                # Cache model on NFS for future use
+                echo "=== Caching model on NFS for future deployments ==="
+                mkdir -p "${CACHE_PATH}"
+                
+                # Copy model files to NFS cache
+                if [ -d "/root/.ollama/models" ]; then
+                  echo "Copying model files to NFS cache..."
+                  cp -r /root/.ollama/models/* "${CACHE_PATH}/" 2>/dev/null || true
+                  echo "✅ SUCCESS: Model cached on NFS at ${CACHE_PATH}"
+                  echo "✅ Future deployments will use this cache and be much faster!"
+                else
+                  echo "⚠️  WARNING: Could not find model files to cache"
+                fi
+              else
+                echo "❌ FAILED: Could not download model from internet"
+                exit 1
+              fi
+            fi
+            
+            echo "=== Model caching complete ==="
+            echo "Model ${MODEL_NAME}:${MODEL_TAG} is ready for use"
+        volumeMounts:
+        - name: ollama-models
+          mountPath: /root/.ollama
+        - name: nfs-model-cache
+          mountPath: /mnt/nfs-cache
+        env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0:11434"
+        resources:
+          limits:
+            memory: "6Gi"
+            cpu: "2"
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+      {{- else }}
+      # Standard Model Download (no Harbor caching)
+      # Downloads model directly from Ollama registry every time
+      - name: ollama-pull-model
+        image: "{{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command: ["/bin/sh", "-c", "ollama serve & sleep 5 && ollama pull tinyllama:latest"]
+        volumeMounts:
+        - name: ollama-models
+          mountPath: /root/.ollama
+        resources:
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+      {{- end }}
+      containers:
+      - name: ollama
+        image: "{{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command: ["ollama", "serve"]
+        ports:
+        - containerPort: {{ .Values.ollama.service.port }}
+          name: http
+        env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0:{{ .Values.ollama.service.port }}"
+        volumeMounts:
+        - name: ollama-models
+          mountPath: /root/.ollama
+        resources:
+          requests:
+            memory: {{ .Values.ollama.resources.requests.memory | quote }}
+            cpu: {{ .Values.ollama.resources.requests.cpu | quote }}
+          limits:
+            memory: {{ .Values.ollama.resources.limits.memory | quote }}
+            cpu: {{ .Values.ollama.resources.limits.cpu | quote }}
+            {{- if and .Values.ollama.gpu.enabled (eq .Values.ollama.hardware.type "nvidia") }}
+            nvidia.com/gpu: 1
+            {{- end }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.ollama.service.port }}
+          initialDelaySeconds: 15
+          periodSeconds: 15
+      {{- if .Values.ollama.observability.enabled }}
+      # OpenTelemetry Sidecar for Ollama observability
+      - name: otel-collector
+        image: otel/opentelemetry-collector-contrib:0.91.0
+        ports:
+        - containerPort: 4317
+          name: otlp-grpc
+        - containerPort: 4318  
+          name: otlp-http
+        - containerPort: 8888
+          name: metrics
+        env:
+        - name: OLLAMA_ENDPOINT
+          value: "http://localhost:{{ .Values.ollama.service.port }}"
+        - name: OTLP_ENDPOINT
+          value: "{{ .Values.ollama.observability.otlpEndpoint }}"
+        volumeMounts:
+        - name: otel-config
+          mountPath: /etc/otel-collector-config.yaml
+          subPath: otel-collector-config.yaml
+        command: ["/otelcol-contrib"]
+        args: ["--config=/etc/otel-collector-config.yaml"]
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "100m"
+            memory: "128Mi"
+      {{- end }}
+      volumes:
+      - name: ollama-models
+        {{- if .Values.ollama.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ include "ai-compare.fullname" . }}-ollama-models-pvc
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      {{- if .Values.ollama.modelCache.nfs.enabled }}
+      # NFS Model Cache Volume
+      # Mounts NFS share for caching AI models across deployments
+      - name: nfs-model-cache
+        nfs:
+          server: {{ .Values.ollama.modelCache.nfs.server }}
+          path: {{ .Values.ollama.modelCache.nfs.path }}
+      {{- end }}
+      {{- if .Values.ollama.observability.enabled }}
+      # OpenTelemetry configuration
+      - name: otel-config
+        configMap:
+          name: {{ include "ai-compare.fullname" . }}-ollama-otel-config
+      {{- end }}

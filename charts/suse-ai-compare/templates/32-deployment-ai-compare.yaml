@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ai-compare.fullname" . }}-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "ai-compare.fullname" . }}-app
+  template:
+    metadata:
+      labels:
+        app: {{ include "ai-compare.fullname" . }}-app
+    spec:
+      serviceAccountName: ai-compare-service-account
+      containers:
+        - name: app
+          image: "{{ .Values.aiCompare.image.repository }}:{{ .Values.aiCompare.image.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.aiCompare.service.port }}
+              name: gradio
+            - containerPort: {{ .Values.aiCompare.httpApi.port }}
+              name: http-api
+          env:
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama-service:11434"
+            - name: OPEN_WEBUI_BASE_URL
+              value: "http://open-webui-service:8080"
+            # Pipeline service configuration
+            - name: PIPELINES_BASE_URL
+              value: "http://pipelines-service:9099"
+            - name: PIPELINE_API_KEY
+              value: "{{ .Values.pipelines.autoConfig.apiKey }}"
+            # --- NEW ENVIRONMENT VARIABLES ---
+            - name: AUTOMATION_ENABLED
+              value: "{{ .Values.aiCompare.automation.enabled }}"
+            - name: AUTOMATION_PROMPT
+              value: "{{ .Values.aiCompare.automation.defaultPrompt }}"
+            - name: AUTOMATION_INTERVAL
+              value: "{{ .Values.aiCompare.automation.intervalSeconds }}"
+            - name: AUTOMATION_SEND_MESSAGES
+              value: "{{ .Values.aiCompare.automation.sendMessages }}"
+            # Observability configuration
+            - name: OBSERVABILITY_ENABLED
+              value: "{{ .Values.aiCompare.observability.enabled }}"
+            - name: OTLP_ENDPOINT
+              value: "{{ .Values.aiCompare.observability.otlpEndpoint }}"
+            - name: COLLECT_GPU_STATS
+              value: "{{ .Values.aiCompare.observability.collectGpuStats }}"
+            # Model configuration for demo
+            - name: MODEL_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: ai-compare-config
+                  key: MODEL_CONFIG
+            - name: CONFIG_MAP_NAME
+              value: "ai-compare-config"
+            - name: CONFIG_MAP_NAMESPACE
+              value: "{{ .Release.Namespace }}"
+            # Service health failure simulation
+            - name: SERVICE_HEALTH_FAILURE
+              value: "false"
+            - name: DEPLOYMENT_NAME
+              value: "{{ include "ai-compare.fullname" . }}-app"
+            # HTTP API configuration
+            - name: HTTP_API_ENABLED
+              value: {{ .Values.aiCompare.httpApi.enabled | quote }}
+            - name: HTTP_API_PORT
+              value: {{ .Values.aiCompare.httpApi.port | quote }}
+            - name: DEMO_CONFIG_PATH
+              value: "/app/demo-config"
+            # Demo ConfigMap manipulation settings
+            - name: KUBERNETES_NAMESPACE
+              value: "{{ .Release.Namespace }}"
+            - name: DEMO_CONFIGMAP_NAME
+              value: "{{ include "ai-compare.fullname" . }}-demo-config"
+            # Timeout configuration for SUSE security policy compatibility
+            - name: CONNECTION_TIMEOUT
+              value: "5"
+            - name: REQUEST_TIMEOUT
+              value: "8"
+            - name: INFERENCE_TIMEOUT
+              value: "30"
+          # Health checks to ensure proper startup sequencing
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.aiCompare.httpApi.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.aiCompare.httpApi.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.json
+              subPath: config.json
+            - name: demo-config-volume
+              mountPath: /app/demo-config
+              readOnly: true
+          resources:
+            {{- toYaml .Values.aiCompare.resources | nindent 12 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: app-config
+        - name: demo-config-volume
+          configMap:
+            name: {{ include "ai-compare.fullname" . }}-demo-config

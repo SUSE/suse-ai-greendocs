@@ -1,0 +1,184 @@
+# Default values for ai-compare-suse chart
+
+# -- Global image pull policy
+imagePullPolicy: Always
+# -- Correctly formatted list for imagePullSecrets
+imagePullSecrets:
+  - name: application-collection
+# -- Application settings
+ollama:
+  image:
+    repository: dp.apps.rancher.io/containers/ollama
+    tag: "0.11.4"
+  service:
+    port: 11434
+    type: ClusterIP
+  gpu:
+    enabled: true
+  # -- Hardware Configuration for Ollama
+  hardware:
+    type: "nvidia" # Options: "nvidia", "apple"
+  # -- OpenTelemetry observability for Ollama
+  observability:
+    enabled: false # Set to true to enable OpenTelemetry instrumentation
+    otlpEndpoint: "http://opentelemetry-collector.suse-observability.svc.cluster.local:4318"
+  # -- Resource allocation for the main Ollama container
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "2Gi"
+    limits:
+      cpu: "4"
+      memory: "16Gi"
+  persistence:
+    enabled: false
+    size: 10Gi
+    storageClassName: "" # Use default if empty, or specify a storage class
+  # Model caching options
+  modelCache:
+    # NFS-based model caching for shared storage across deployments
+    nfs:
+      enabled: false
+      server: "10.0.9.10" # NFS server IP/hostname
+      path: "/data/ai-models" # NFS share path for caching models
+openWebui:
+  image:
+    repository: dp.apps.rancher.io/containers/open-webui
+    tag: "0.6.18" # Pipeline-enabled version
+  service:
+    port: 8080
+    type: NodePort
+  # Pipeline integration settings
+  pipelines:
+    enabled: true
+    url: "http://pipelines-service:9099"
+# Open WebUI Pipelines Service
+pipelines:
+  enabled: true
+  image:
+    repository: dp.apps.rancher.io/containers/open-webui-pipelines
+    tag: "0.20250329.151219"
+  service:
+    port: 9099
+    type: ClusterIP
+  # Pipeline deployment from git repo
+  git:
+    enabled: true
+    repo: "https://github.com/wiredquill/ai-demos.git"
+    branch: "main"
+    path: "pipelines"
+  # Pipeline configuration
+  config:
+    pipelineMode: "auto-cycle"
+    logLevel: "INFO"
+  # Auto-configuration settings
+  autoConfig:
+    enabled: true
+    apiKey: "0p3n-w3bu!"
+    modelId: "response_level"
+    connectionName: "Response Level Pipeline"
+aiCompare:
+  image:
+    repository: ghcr.io/wiredquill/ai-demos-suse
+    tag: "5b324bd"
+  service:
+    port: 7860
+    type: NodePort
+  persistence:
+    enabled: false
+    size: 1Gi
+    storageClassName: ""
+  # Development mode settings (SUSE-specific)
+  devMode:
+    sshPort: 22
+    gitRepo: "https://github.com/wiredquill/ai-demos.git"
+    gitBranch: "main"
+  # Automation settings for the recurring test runner
+  automation:
+    enabled: false
+    defaultPrompt: "Why is the sky blue? Be concise."
+    intervalSeconds: 30
+    sendMessages: true # Enable/disable sending test messages to models
+  # Observability settings for OpenTelemetry and OpenLit (development option)
+  observability:
+    enabled: false # Disabled by default - development/testing option only
+    otlpEndpoint: "http://opentelemetry-collector.suse-observability.svc.cluster.local:4318"
+    collectGpuStats: false
+    schedule: "*/5 * * * *"
+  # HTTP API server for observable traffic generation
+  httpApi:
+    enabled: true
+    port: 8080
+  # Resource allocation for AI Compare app
+  resources:
+    requests:
+      cpu: "500m" # Increased from 200m for better performance
+      memory: "1Gi" # Increased from 512Mi for more headroom
+    limits:
+      cpu: "2000m" # Increased from 1000m for handling spikes
+      memory: "4Gi" # Increased from 2Gi for better caching
+# Frontend Configuration
+frontend:
+  # Modern React-based dashboard (recommended)
+  react:
+    enabled: false # Set to true to enable React frontend
+    replicas: 1
+    image:
+      repository: ghcr.io/wiredquill/ai-demos-frontend-react
+      tag: "latest"
+      pullPolicy: Always
+    service:
+      type: NodePort
+      port: 3000
+      nodePort: null # Auto-assign if null
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  # HTTP Load Simulator (Optional - HTTP traffic generation for observability)
+  loadSimulator:
+    enabled: false # Disabled by default - enable for HTTP traffic generation
+    image:
+      repository: ghcr.io/wiredquill/ai-demos-load-simulator
+      tag: "latest"
+      pullPolicy: Always
+    intervalSeconds: 30
+    requestTimeout: 30
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      capabilities:
+        drop:
+          - ALL
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    podAnnotations: {}
+# Demo Configuration for Observable Failures
+demo:
+  # ConfigMap-based availability demo
+  availability:
+    # Key that application reads for model configuration
+    configKey: "models-latest" # Change to "models_latest" to break app
+    # Real config value that works
+    validValue: "tinyllama:latest"
+    # Invalid config that causes observable failures
+    invalidValue: "broken-model:invalid"
+# NeuVector Security Configuration
+neuvector:
+  enabled: false

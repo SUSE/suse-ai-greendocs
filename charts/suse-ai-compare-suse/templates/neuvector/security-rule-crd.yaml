@@ -1,0 +1,33 @@
+{{- if .Values.neuvector.enabled }}
+apiVersion: neuvector.com/v1
+kind: NvSecurityRule
+metadata:
+  name: {{ include "ai-compare.fullname" . }}-dlp-rule
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ai-compare.labels" . | nindent 4 }}
+    app.component: security
+    security.policy: dlp
+  annotations:
+    description: "AI Compare DLP security rule for demo traffic monitoring"
+    demo.type: "network-security"
+spec:
+  targets:
+    - group: "nv.{{ .Release.Namespace }}.{{ include "ai-compare.fullname" . }}"
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: {{ include "ai-compare.name" . }}
+          app.kubernetes.io/instance: {{ .Release.Name }}
+  rules:
+    - id: 100001
+      comment: "AI Compare DLP monitoring for sensitive data"
+      from: "{{ .Release.Namespace }}"
+      to: "external"
+      applications: ["HTTP", "HTTPS"]
+      ports: "any"
+      action: "allow"
+      dlp:
+        sensor: "{{ include "ai-compare.fullname" . }}-sensitive-data-detection"
+        action: "alert"
+      log: true
+{{- end }}

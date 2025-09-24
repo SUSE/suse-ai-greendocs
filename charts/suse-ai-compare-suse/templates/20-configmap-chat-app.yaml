@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  config.json: |
+    {
+        "providers": {
+            "OpenAI": "https://openai.com",
+            "Claude (Anthropic)": "https://anthropic.com",
+            "DeepSeek": "https://deepseek.com",
+            "Google Gemini": "https://aistudio.google.com",
+            "Cohere": "https://cohere.ai",
+            "Mistral AI": "https://mistral.ai",
+            "Perplexity": "https://perplexity.ai",
+            "Together AI": "https://together.xyz",
+            "Groq": "https://groq.com",
+            "Hugging Face": "https://huggingface.co"
+        }
+    }
