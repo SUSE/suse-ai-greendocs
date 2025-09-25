@@ -2,7 +2,7 @@ apiVersion: v2
 name: suse-ai-compare-opentelemetry
 description: "SUSE AI Compare OpenTelemetry Edition - Advanced observability-focused AI response comparison platform. Features comprehensive GenAI telemetry, token-level cost tracking, model performance monitoring, and deep integration with SUSE Observability."
 type: application
-version: 0.1.1
+version: 0.1.2
 appVersion: "latest"
 icon: https://www.suse.com/assets/img/suse-black-logo-green.svg
 keywords:
