@@ -195,7 +195,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create ${{ matrix.chart }}-v${{ steps.new-version.outputs.new }} \
+          RELEASE_TAG="${{ matrix.chart }}-v${{ steps.new-version.outputs.new }}"
+          CHART_FILE=".helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz"
+
+          # Check if release already exists
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists, skipping..."
+            exit 0
+          fi
+
+          # Check if chart file exists
+          if [ ! -f "$CHART_FILE" ]; then
+            echo "Chart file $CHART_FILE not found, skipping release creation..."
+            exit 0
+          fi
+
+          gh release create "$RELEASE_TAG" \
             --title "${{ matrix.chart }} v${{ steps.new-version.outputs.new }}" \
             --notes "## ${{ matrix.chart }} v${{ steps.new-version.outputs.new }}
 
@@ -205,14 +220,14 @@ jobs:
 
             ### Installation
             \`\`\`bash
-            helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs
+            helm repo add suse-ai-greendocs https://suse.github.io/suse-ai-greendocs
             helm repo update
             helm install my-release suse-ai-greendocs/${{ matrix.chart }} --version ${{ steps.new-version.outputs.new }}
             \`\`\`
 
             ### Chart Archive
             - 📦 [${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz](.helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz)" \
-            .helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz
+            "$CHART_FILE" || echo "Failed to create release, but continuing..."
 
   publish-pages:
     needs: release-charts
