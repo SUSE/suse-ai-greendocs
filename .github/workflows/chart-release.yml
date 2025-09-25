@@ -3,7 +3,8 @@ name: Chart Release and Auto-Update
 on:
   push:
     paths:
-      - 'charts/**/Chart.yaml'
+      - 'charts/*/Chart.yaml'
+      - 'charts/*/values.yaml'
     branches:
       - main
       - charts-for-ai-demo-apps
