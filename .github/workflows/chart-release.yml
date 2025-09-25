@@ -184,16 +184,12 @@ jobs:
           - Previous version: ${{ steps.current-version.outputs.current }}
           - New version: ${{ steps.new-version.outputs.new }}"
 
-          # Push to current branch (not main if it's protected)
-          if [ "${{ github.ref_name }}" == "main" ]; then
-            echo "Main branch is protected. Creating release branch..."
-            RELEASE_BRANCH="release/${{ matrix.chart }}-v${{ steps.new-version.outputs.new }}"
-            git checkout -b "$RELEASE_BRANCH"
-            git push origin "$RELEASE_BRANCH"
-            echo "::notice::Created release branch: $RELEASE_BRANCH. Please create a PR to merge to main."
-          else
-            git push origin ${{ github.ref_name }}
-          fi
+          # Always create release branches for chart releases to avoid conflicts
+          echo "Creating release branch for chart release..."
+          RELEASE_BRANCH="release/${{ matrix.chart }}-v${{ steps.new-version.outputs.new }}"
+          git checkout -b "$RELEASE_BRANCH"
+          git push origin "$RELEASE_BRANCH"
+          echo "::notice::Created release branch: $RELEASE_BRANCH. Please create a PR to merge to target branch."
 
       - name: Create GitHub Release
         env:
