@@ -46,32 +46,36 @@ jobs:
       - name: Detect chart changes
         id: changes
         run: |
-          CHANGED_CHARTS=""
+          CHANGED_CHARTS_JSON="[]"
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            CHANGED_CHARTS="${{ github.event.inputs.chart_name }}"
+            CHANGED_CHARTS_JSON="[\"${{ github.event.inputs.chart_name }}\"]"
           else
+            CHARTS_ARRAY=""
             for chart in charts/*/Chart.yaml; do
               chart_dir=$(dirname "$chart")
               chart_name=$(basename "$chart_dir")
               if git diff --name-only HEAD~1 HEAD | grep -q "^${chart_dir}/"; then
-                if [ -n "$CHANGED_CHARTS" ]; then
-                  CHANGED_CHARTS="${CHANGED_CHARTS},${chart_name}"
+                if [ -n "$CHARTS_ARRAY" ]; then
+                  CHARTS_ARRAY="${CHARTS_ARRAY},\"${chart_name}\""
                 else
-                  CHANGED_CHARTS="$chart_name"
+                  CHARTS_ARRAY="\"${chart_name}\""
                 fi
               fi
             done
+            if [ -n "$CHARTS_ARRAY" ]; then
+              CHANGED_CHARTS_JSON="[${CHARTS_ARRAY}]"
+            fi
           fi
-          echo "charts=$CHANGED_CHARTS" >> $GITHUB_OUTPUT
-          echo "Detected changed charts: $CHANGED_CHARTS"
+          echo "charts=$CHANGED_CHARTS_JSON" >> $GITHUB_OUTPUT
+          echo "Detected changed charts: $CHANGED_CHARTS_JSON"
 
   release-charts:
     needs: detect-changes
-    if: needs.detect-changes.outputs.charts != ''
+    if: needs.detect-changes.outputs.charts != '[]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        chart: ${{ fromJson(format('["{0}"]', needs.detect-changes.outputs.charts)) }}
+        chart: ${{ fromJson(needs.detect-changes.outputs.charts) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -174,13 +178,22 @@ jobs:
           git add charts/index.yaml
           git add .helm-releases/
           git commit -m "🚀 Release ${{ matrix.chart }} v${{ steps.new-version.outputs.new }}
-          
+
           - Automated version bump: ${{ github.event.inputs.version_bump || 'patch' }}
           - Chart: ${{ matrix.chart }}
           - Previous version: ${{ steps.current-version.outputs.current }}
           - New version: ${{ steps.new-version.outputs.new }}"
-          
-          git push origin ${{ github.ref_name }}
+
+          # Push to current branch (not main if it's protected)
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            echo "Main branch is protected. Creating release branch..."
+            RELEASE_BRANCH="release/${{ matrix.chart }}-v${{ steps.new-version.outputs.new }}"
+            git checkout -b "$RELEASE_BRANCH"
+            git push origin "$RELEASE_BRANCH"
+            echo "::notice::Created release branch: $RELEASE_BRANCH. Please create a PR to merge to main."
+          else
+            git push origin ${{ github.ref_name }}
+          fi
 
       - name: Create GitHub Release
         env:
