@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "ai-compare-opentelemetry.fullname" . }}-test-connectivity"
+  labels:
+    {{- include "ai-compare-opentelemetry.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+  - name: connectivity-test
+    image: curlimages/curl:8.5.0
+    command:
+    - /bin/sh
+    - -c
+    - |
+      set -e
+      echo "=== AI Compare Service Connectivity Tests ==="
+      
+      # Test Ollama service
+      echo "Testing Ollama service connectivity..."
+      if curl -f -s http://ollama-service:{{ .Values.ollama.service.port }}/api/tags; then
+        echo "✅ Ollama service is accessible"
+      else
+        echo "❌ Failed to connect to Ollama service"
+        exit 1
+      fi
+      
+      # Test Open WebUI service
+      echo "Testing Open WebUI service connectivity..."
+      if curl -f -s http://open-webui-service:{{ .Values.openWebui.service.port }}/health || curl -f -s http://open-webui-service:{{ .Values.openWebui.service.port }}/; then
+        echo "✅ Open WebUI service is accessible"
+      else
+        echo "❌ Failed to connect to Open WebUI service"
+        exit 1
+      fi
+      
+      # Test AI Compare App service
+      echo "Testing AI Compare App service connectivity..."
+      if curl -f -s http://{{ include "ai-compare-opentelemetry.fullname" . }}-app-service:{{ .Values.aiCompare.service.port }}/; then
+        echo "✅ AI Compare App service is accessible"
+      else
+        echo "❌ Failed to connect to AI Compare App service"
+        exit 1
+      fi
+      
+      # Test Pipelines service (if enabled)
+      {{- if .Values.pipelines.enabled }}
+      echo "Testing Pipelines service connectivity..."
+      if curl -f -s http://pipelines-service:{{ .Values.pipelines.service.port }}/; then
+        echo "✅ Pipelines service is accessible"
+      else
+        echo "❌ Failed to connect to Pipelines service"
+        exit 1
+      fi
+      {{- end }}
+      
+      echo "=== All connectivity tests passed! ==="
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "100m"
+      limits:
+        memory: "128Mi"
+        cpu: "200m"

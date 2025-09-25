@@ -1,0 +1,91 @@
+{{- if .Values.neuvector.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ai-compare-opentelemetry.fullname" . }}-neuvector-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ai-compare-opentelemetry.labels" . | nindent 4 }}
+data:
+  dlp-sensor.json: |
+    {
+      "config": {
+        "name": "sensitive-data-detection",
+        "comment": "Detect credit card and SSN patterns for AI Compare security demo",
+        "rules": [
+          {
+            "name": "credit-card-pattern", 
+            "patterns": [
+              {
+                "key": "credit-card",
+                "op": "regex",
+                "value": "\\b(?:\\d[ -]*?){13,16}\\b",
+                "context": "body"
+              }
+            ],
+            "action": "alert"
+          },
+          {
+            "name": "ssn-pattern",
+            "patterns": [
+              {
+                "key": "ssn",
+                "op": "regex", 
+                "value": "\\b\\d{3}-\\d{2}-\\d{4}\\b",
+                "context": "body"
+              }
+            ],
+            "action": "alert"
+          }
+        ]
+      }
+    }
+  
+  group-config.json: |
+    {
+      "config": {
+        "name": "nv.{{ .Release.Namespace }}.{{ include "ai-compare-opentelemetry.fullname" . }}",
+        "comment": "AI Compare application group for DLP monitoring",
+        "cfg_type": "learned",
+        "kind": "container",
+        "platform_role": "",
+        "cap_change_mode": false,
+        "cap_scoring": false,
+        "cap_quarantine": false,
+        "dlp_sensors": [
+          {
+            "name": "sensitive-data-detection",
+            "action": "alert"
+          }
+        ],
+        "criteria": [
+          {
+            "key": "namespace",
+            "value": "{{ .Release.Namespace }}",
+            "op": "="
+          },
+          {
+            "key": "service", 
+            "value": "{{ include "ai-compare-opentelemetry.fullname" . }}",
+            "op": "="
+          }
+        ]
+      }
+    }
+
+  network-rule.json: |
+    {
+      "config": {
+        "id": 100001,
+        "comment": "Monitor AI Compare outbound traffic for security demo",
+        "from": "nv.{{ .Release.Namespace }}.{{ include "ai-compare-opentelemetry.fullname" . }}",
+        "to": "external",
+        "ports": "any",
+        "action": "allow",
+        "learned": false,
+        "disable": false,
+        "cfg_type": "user_created",
+        "priority": 0
+      }
+    }
+{{- end }}

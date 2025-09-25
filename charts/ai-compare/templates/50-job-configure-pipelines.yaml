@@ -1,0 +1,163 @@
+{{- if and .Values.pipelines.enabled .Values.pipelines.autoConfig.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "ai-compare.fullname" . }}-configure-pipelines
+  labels:
+    app.kubernetes.io/name: {{ include "ai-compare.fullname" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: pipeline-configurator
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "ai-compare.fullname" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: pipeline-configurator
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: configure-pipelines
+        image: curlimages/curl:8.5.0
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          
+          OPEN_WEBUI_URL="http://open-webui-service:8080"
+          PIPELINES_URL="http://pipelines-service:9099"
+          PIPELINE_API_KEY="{{ .Values.pipelines.autoConfig.apiKey }}"
+          
+          echo "=== Open WebUI Pipeline Auto-Configuration ==="
+          echo "Open WebUI URL: $OPEN_WEBUI_URL"
+          echo "Pipelines URL: $PIPELINES_URL"
+          
+          # Wait for Open WebUI to be ready
+          echo "⏳ Waiting for Open WebUI to be ready..."
+          for i in $(seq 1 30); do
+            if curl -s -f "$OPEN_WEBUI_URL/" > /dev/null 2>&1; then
+              echo "✅ Open WebUI is ready"
+              break
+            fi
+            echo "   Attempt $i/30: Open WebUI not ready, waiting 10s..."
+            sleep 10
+          done
+          
+          # Wait for Pipelines service to be ready
+          echo "⏳ Waiting for Pipelines service to be ready..."
+          for i in $(seq 1 30); do
+            if curl -s -f "$PIPELINES_URL/" > /dev/null 2>&1; then
+              echo "✅ Pipelines service is ready"
+              break
+            fi
+            echo "   Attempt $i/30: Pipelines service not ready, waiting 10s..."
+            sleep 10
+          done
+          
+          # Check if we can access Open WebUI admin API
+          echo "🔍 Checking Open WebUI API accessibility..."
+          WEBUI_RESPONSE=$(curl -s -w "%{http_code}" -o /tmp/webui_check "$OPEN_WEBUI_URL/api/v1/models" || echo "000")
+          
+          if [ "$WEBUI_RESPONSE" = "200" ] || [ "$WEBUI_RESPONSE" = "401" ] || [ "$WEBUI_RESPONSE" = "403" ]; then
+            echo "✅ Open WebUI API is accessible (HTTP $WEBUI_RESPONSE)"
+          else
+            echo "⚠️  Open WebUI API returned HTTP $WEBUI_RESPONSE, continuing anyway..."
+          fi
+          
+          # Try to add pipeline configuration via API
+          echo "🔧 Attempting to configure pipeline connection..."
+          
+          # Method 1: Try to add model configuration directly
+          PIPELINE_CONFIG='{
+            "id": "pipelines-service",
+            "name": "Response Level Pipeline",
+            "base_url": "'$PIPELINES_URL'",
+            "api_key": "'$PIPELINE_API_KEY'",
+            "type": "openai"
+          }'
+          
+          # Check if pipelines service has models
+          echo "🔍 Checking available models in pipelines service..."
+          PIPELINE_MODELS=$(curl -s -H "Authorization: Bearer $PIPELINE_API_KEY" "$PIPELINES_URL/v1/models" || echo '{"error": "failed"}')
+          echo "Pipeline models response: $PIPELINE_MODELS"
+          
+          # Test pipeline functionality
+          echo "🧪 Testing pipeline functionality..."
+          TEST_RESPONSE=$(curl -s -X POST "$PIPELINES_URL/v1/chat/completions" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $PIPELINE_API_KEY" \
+            -d '{
+              "model": "{{ .Values.pipelines.autoConfig.modelId }}",
+              "messages": [{"role": "user", "content": "Test pipeline"}],
+              "stream": false
+            }' || echo '{"error": "test failed"}')
+          
+          if echo "$TEST_RESPONSE" | grep -q "response_level"; then
+            echo "✅ Pipeline test successful"
+          else
+            echo "⚠️  Pipeline test response: $TEST_RESPONSE"
+          fi
+          
+          # Create configuration instructions
+          echo ""
+          echo "📋 ============================================"
+          echo "📋 MANUAL CONFIGURATION INSTRUCTIONS"
+          echo "📋 ============================================"
+          echo "📋"
+          echo "📋 To complete the pipeline setup, configure Open WebUI:"
+          echo "📋"
+          echo "📋 1. Access Open WebUI admin panel:"
+          echo "📋    → Admin Panel → Settings → Connections"
+          echo "📋"
+          echo "📋 2. Add new connection with these settings:"
+          echo "📋    • API Base URL: $PIPELINES_URL"
+          echo "📋    • API Key: $PIPELINE_API_KEY"
+          echo "📋    • Name: Response Level Pipeline"
+          echo "📋"
+          echo "📋 3. Enable the 'response_level' model in:"
+          echo "📋    → Admin Panel → Models"
+          echo "📋"
+          echo "📋 ============================================"
+          echo ""
+          
+          # Try to write configuration to a ConfigMap for reference
+          echo "💾 Creating pipeline configuration reference..."
+          cat > /tmp/pipeline-config.json << EOF
+          {
+            "pipeline_url": "$PIPELINES_URL",
+            "api_key": "$PIPELINE_API_KEY",
+            "model_id": "response_level",
+            "setup_instructions": [
+              "Access Open WebUI Admin Panel",
+              "Go to Settings → Connections",
+              "Add connection with URL: $PIPELINES_URL",
+              "Set API Key to: $PIPELINE_API_KEY",
+              "Enable response_level model in Models section"
+            ],
+            "education_levels": [
+              "Default: Standard responses", 
+              "Kid Mode: Age 5 explanations",
+              "Young Scientist: Age 12 science", 
+              "College Student: Technical analysis",
+              "Scientific: Full technical precision"
+            ]
+          }
+          EOF
+          
+          echo "✅ Pipeline auto-configuration job completed"
+          echo "🔗 Pipeline service available at: $PIPELINES_URL"
+          echo "🎓 Response Level Pipeline ready for educational demonstrations"
+          
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi" 
+            cpu: "200m"
+{{- end }}

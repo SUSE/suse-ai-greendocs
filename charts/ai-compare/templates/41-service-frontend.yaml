@@ -1,0 +1,2 @@
+# Load simulator doesn't need a service - it's a client that makes outbound requests
+# Service removed to eliminate unnecessary resources

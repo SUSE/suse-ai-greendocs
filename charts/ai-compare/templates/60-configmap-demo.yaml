@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ai-compare.fullname" . }}-demo-config
+  labels:
+    {{- include "ai-compare.labels" . | nindent 4 }}
+    app.kubernetes.io/component: demo
+data:
+  # This key determines service health - changing it breaks the application
+  # Normal: "models-latest" -> Works correctly
+  # Broken: "models_latest" -> Application can't find config, returns HTTP 500
+  {{ .Values.demo.availability.configKey }}: {{ .Values.demo.availability.validValue | quote }}
+  
+  # Backup configurations for demonstration
+  models-backup: "tinyllama:latest"
+  service-info: |
+    {
+      "name": "ai-compare-app",
+      "version": "{{ .Chart.AppVersion }}",
+      "demo_enabled": true,
+      "observability_endpoint": "{{ .Values.aiCompare.observability.otlpEndpoint }}",
+      "last_updated": "{{ now | date "2006-01-02T15:04:05Z" }}"
+    }
+  
+  # Demo metadata for SUSE Observability
+  demo-metadata: |
+    availability_demo:
+      description: "ConfigMap-based failure simulation for SUSE Observability monitoring"
+      failure_mechanism: "Change config key from 'models-latest' to 'models_latest'"
+      expected_errors: "HTTP 500 Internal Server Error, ConfigMap key not found"
+      observable_patterns:
+        - "Error rate spike from 0% to 50%+"
+        - "Response time increase due to error handling"
+        - "Health check failures on /health endpoint"
+        - "Service degradation alerts in SUSE Observability"
+      recovery_method: "Change config key back to 'models-latest'"

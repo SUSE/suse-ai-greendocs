@@ -1,0 +1,46 @@
+{{- if .Values.neuvector.enabled }}
+apiVersion: neuvector.com/v1
+kind: NvDlpSensor
+metadata:
+  name: {{ include "ai-compare.fullname" . }}-sensitive-data-detection
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ai-compare.labels" . | nindent 4 }}
+    app.component: security
+    security.policy: dlp
+  annotations:
+    description: "AI Compare DLP sensor for credit card and SSN detection"
+    demo.type: "data-leak-prevention"
+spec:
+  name: "ai-compare-sensitive-data-detection"
+  comment: "Detect credit card and SSN patterns for AI Compare security demo"
+  rules:
+    - name: "credit-card-pattern"
+      patterns:
+        - key: "credit-card"
+          op: "regex"
+          value: "\\b(?:\\d[ -]*?){13,16}\\b"
+          context: "body"
+      action: "alert"
+    - name: "ssn-pattern"
+      patterns:
+        - key: "ssn"
+          op: "regex"
+          value: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+          context: "body"
+      action: "alert"
+    - name: "demo-credit-card"
+      patterns:
+        - key: "demo-cc"
+          op: "regex"
+          value: "3412-1234-1234-2222"
+          context: "body"
+      action: "alert"
+    - name: "demo-ssn"
+      patterns:
+        - key: "demo-ssn"
+          op: "regex"
+          value: "123-45-6789"
+          context: "body"
+      action: "alert"
+{{- end }}
