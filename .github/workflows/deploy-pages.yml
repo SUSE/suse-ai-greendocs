@@ -1,0 +1,113 @@
+name: Deploy GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'charts/index.yaml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Create GitHub Pages content
+        run: |
+          mkdir -p public
+
+          # Copy charts index and packages
+          cp charts/index.yaml public/
+          cp charts/*.tgz public/ 2>/dev/null || echo "No .tgz files to copy"
+
+          # Create index.html
+          cat > public/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>SUSE AI Helm Charts</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 40px; }
+                  .header { border-bottom: 1px solid #eee; padding-bottom: 20px; }
+                  .chart { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+                  .version { color: #666; font-size: 0.9em; }
+                  code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; }
+              </style>
+          </head>
+          <body>
+              <div class="header">
+                  <h1>SUSE AI Helm Charts Repository</h1>
+                  <p>Enterprise-ready AI applications with comprehensive observability.</p>
+              </div>
+
+              <h2>Available Charts</h2>
+
+              <div class="chart">
+                  <h3>ai-compare</h3>
+                  <p>SUSE AI Compare - Enterprise AI response comparison platform</p>
+                  <p><strong>Installation:</strong></p>
+                  <code>helm repo add suse-ai-greendocs https://suse.github.io/suse-ai-greendocs</code><br>
+                  <code>helm install ai-compare suse-ai-greendocs/ai-compare</code>
+              </div>
+
+              <div class="chart">
+                  <h3>ai-compare-suse</h3>
+                  <p>SUSE AI Compare SUSE Edition - Enterprise-hardened with SUSE BCI containers</p>
+                  <p><strong>Installation:</strong></p>
+                  <code>helm repo add suse-ai-greendocs https://suse.github.io/suse-ai-greendocs</code><br>
+                  <code>helm install ai-compare-suse suse-ai-greendocs/ai-compare-suse</code>
+              </div>
+
+              <div class="chart">
+                  <h3>ai-compare-opentelemetry</h3>
+                  <p>SUSE AI Compare OpenTelemetry Edition - Advanced GenAI observability</p>
+                  <p><strong>Installation:</strong></p>
+                  <code>helm repo add suse-ai-greendocs https://suse.github.io/suse-ai-greendocs</code><br>
+                  <code>helm install ai-compare-otel suse-ai-greendocs/ai-compare-opentelemetry</code>
+              </div>
+
+              <div class="chart">
+                  <h3>suse-ai-hr-assistant</h3>
+                  <p>SUSE AI HR Assistant Demo - Comprehensive LLM Observability</p>
+                  <p><strong>Installation:</strong></p>
+                  <code>helm repo add suse-ai-greendocs https://suse.github.io/suse-ai-greendocs</code><br>
+                  <code>helm install hr-assistant suse-ai-greendocs/suse-ai-hr-assistant</code>
+              </div>
+
+              <h2>Repository Setup</h2>
+              <p>Add this repository to Helm:</p>
+              <code>helm repo add suse-ai-greendocs https://suse.github.io/suse-ai-greendocs</code><br>
+              <code>helm repo update</code>
+
+              <h2>Chart Index</h2>
+              <p>View the complete chart index: <a href="index.yaml">index.yaml</a></p>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'public'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
