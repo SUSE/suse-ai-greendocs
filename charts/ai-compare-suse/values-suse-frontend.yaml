@@ -1,0 +1,11 @@
+# SUSE-specific values override for frontend with SUSE App Collection NGINX
+# Use this to deploy with SUSE's NGINX image instead of upstream
+
+frontend:
+  enabled: true
+  image:
+    repository: registry.suse.com/suse/nginx
+    tag: "1.25"
+    pullPolicy: IfNotPresent
+  service:
+    type: NodePort  # Expose for easier access in demos

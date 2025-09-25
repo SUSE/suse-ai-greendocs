@@ -1,0 +1,83 @@
+{{- if .Values.neuvector.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "ai-compare-suse.fullname" . }}-neuvector-setup
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ai-compare-suse.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "ai-compare-suse.selectorLabels" . | nindent 8 }}
+        job-name: neuvector-setup
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: neuvector-config
+        image: curlimages/curl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          echo "Configuring NeuVector for AI Compare security demo..."
+          
+          # Wait for NeuVector controller to be ready
+          echo "Waiting for NeuVector controller..."
+          until curl -k -f {{ .Values.neuvector.controllerUrl }}/v1/auth 2>/dev/null; do
+            echo "Waiting for NeuVector controller at {{ .Values.neuvector.controllerUrl }}..."
+            sleep 10
+          done
+          
+          # Authenticate with NeuVector
+          echo "Authenticating with NeuVector..."
+          TOKEN=$(curl -k -X POST {{ .Values.neuvector.controllerUrl }}/v1/auth \
+            -H "Content-Type: application/json" \
+            -d '{"password": {"username": "{{ .Values.neuvector.username }}", "password": "{{ .Values.neuvector.password }}"}}' \
+            | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+          
+          if [ -z "$TOKEN" ]; then
+            echo "Failed to authenticate with NeuVector"
+            exit 1
+          fi
+          
+          echo "Authentication successful, configuring DLP sensor..."
+          
+          # Create DLP Sensor
+          curl -k -X POST {{ .Values.neuvector.controllerUrl }}/v1/dlp/sensor \
+            -H "Content-Type: application/json" \
+            -H "X-Auth-Token: $TOKEN" \
+            -d @/config/dlp-sensor.json || true
+          
+          echo "Configuring group..."
+          
+          # Create/Update Group
+          curl -k -X PATCH {{ .Values.neuvector.controllerUrl }}/v1/group/nv.{{ .Release.Namespace }}.{{ include "ai-compare-suse.fullname" . }} \
+            -H "Content-Type: application/json" \
+            -H "X-Auth-Token: $TOKEN" \
+            -d @/config/group-config.json || true
+          
+          echo "Configuring network rule..."
+          
+          # Create Network Rule  
+          curl -k -X POST {{ .Values.neuvector.controllerUrl }}/v1/policy/rule \
+            -H "Content-Type: application/json" \
+            -H "X-Auth-Token: $TOKEN" \
+            -d @/config/network-rule.json || true
+          
+          echo "NeuVector configuration completed successfully!"
+          
+        volumeMounts:
+        - name: config
+          mountPath: /config
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "ai-compare-suse.fullname" . }}-neuvector-config
+{{- end }}

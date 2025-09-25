@@ -1,0 +1,15 @@
+{{- if .Values.ollama.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "ai-compare.fullname" . }}-ollama-models-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.ollama.persistence.size }}
+  {{- if .Values.ollama.persistence.storageClassName }}
+  storageClassName: {{ .Values.ollama.persistence.storageClassName }}
+  {{- end }}
+{{- end }}

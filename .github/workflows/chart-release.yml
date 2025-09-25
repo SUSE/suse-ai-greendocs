@@ -3,7 +3,8 @@ name: Chart Release and Auto-Update
 on:
   push:
     paths:
-      - 'charts/**/Chart.yaml'
+      - 'charts/*/Chart.yaml'
+      - 'charts/*/values.yaml'
     branches:
       - main
       - charts-for-ai-demo-apps
@@ -15,6 +16,9 @@ on:
         type: choice
         options:
           - suse-ai-hr-assistant
+          - ai-compare
+          - ai-compare-suse
+          - ai-compare-opentelemetry
       version_bump:
         description: 'Version bump type'
         required: true
@@ -43,32 +47,61 @@ jobs:
       - name: Detect chart changes
         id: changes
         run: |
-          CHANGED_CHARTS=""
+          CHANGED_CHARTS_JSON="[]"
+
+          echo "=== Debug Info ==="
+          echo "Event name: ${{ github.event_name }}"
+          echo "Changed files:"
+          git diff --name-only HEAD~1 HEAD || echo "No diff available"
+
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            CHANGED_CHARTS="${{ github.event.inputs.chart_name }}"
+            echo "Manual workflow dispatch detected"
+            CHANGED_CHARTS_JSON="[\"${{ github.event.inputs.chart_name }}\"]"
           else
-            for chart in charts/*/Chart.yaml; do
-              chart_dir=$(dirname "$chart")
-              chart_name=$(basename "$chart_dir")
-              if git diff --name-only HEAD~1 HEAD | grep -q "^${chart_dir}/"; then
-                if [ -n "$CHANGED_CHARTS" ]; then
-                  CHANGED_CHARTS="${CHANGED_CHARTS},${chart_name}"
-                else
-                  CHANGED_CHARTS="$chart_name"
+            echo "Checking for Chart.yaml changes..."
+            CHARTS_ARRAY=""
+
+            # Only process if we find any Chart.yaml files that changed
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+            echo "All changed files: $CHANGED_FILES"
+
+            if echo "$CHANGED_FILES" | grep -q "charts/.*/Chart\.yaml"; then
+              echo "Chart.yaml changes detected"
+              for chart in charts/*/Chart.yaml; do
+                if [ -f "$chart" ]; then
+                  chart_dir=$(dirname "$chart")
+                  chart_name=$(basename "$chart_dir")
+                  echo "Checking chart: $chart_name in $chart_dir"
+
+                  if echo "$CHANGED_FILES" | grep -q "^${chart_dir}/"; then
+                    echo "Changes found in $chart_name"
+                    if [ -n "$CHARTS_ARRAY" ]; then
+                      CHARTS_ARRAY="${CHARTS_ARRAY},\"${chart_name}\""
+                    else
+                      CHARTS_ARRAY="\"${chart_name}\""
+                    fi
+                  fi
                 fi
-              fi
-            done
+              done
+            else
+              echo "No Chart.yaml files changed"
+            fi
+
+            if [ -n "$CHARTS_ARRAY" ]; then
+              CHANGED_CHARTS_JSON="[${CHARTS_ARRAY}]"
+            fi
           fi
-          echo "charts=$CHANGED_CHARTS" >> $GITHUB_OUTPUT
-          echo "Detected changed charts: $CHANGED_CHARTS"
+
+          echo "Final result: $CHANGED_CHARTS_JSON"
+          echo "charts=$CHANGED_CHARTS_JSON" >> $GITHUB_OUTPUT
 
   release-charts:
     needs: detect-changes
-    if: needs.detect-changes.outputs.charts != ''
+    if: needs.detect-changes.outputs.charts != '[]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        chart: ${{ fromJson(format('["{0}"]', needs.detect-changes.outputs.charts)) }}
+        chart: ${{ fromJson(needs.detect-changes.outputs.charts) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -171,19 +204,39 @@ jobs:
           git add charts/index.yaml
           git add .helm-releases/
           git commit -m "🚀 Release ${{ matrix.chart }} v${{ steps.new-version.outputs.new }}
-          
+
           - Automated version bump: ${{ github.event.inputs.version_bump || 'patch' }}
           - Chart: ${{ matrix.chart }}
           - Previous version: ${{ steps.current-version.outputs.current }}
           - New version: ${{ steps.new-version.outputs.new }}"
-          
-          git push origin ${{ github.ref_name }}
+
+          # Always create release branches for chart releases to avoid conflicts
+          echo "Creating release branch for chart release..."
+          RELEASE_BRANCH="release/${{ matrix.chart }}-v${{ steps.new-version.outputs.new }}"
+          git checkout -b "$RELEASE_BRANCH"
+          git push origin "$RELEASE_BRANCH"
+          echo "::notice::Created release branch: $RELEASE_BRANCH. Please create a PR to merge to target branch."
 
       - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create ${{ matrix.chart }}-v${{ steps.new-version.outputs.new }} \
+          RELEASE_TAG="${{ matrix.chart }}-v${{ steps.new-version.outputs.new }}"
+          CHART_FILE=".helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz"
+
+          # Check if release already exists
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists, skipping..."
+            exit 0
+          fi
+
+          # Check if chart file exists
+          if [ ! -f "$CHART_FILE" ]; then
+            echo "Chart file $CHART_FILE not found, skipping release creation..."
+            exit 0
+          fi
+
+          gh release create "$RELEASE_TAG" \
             --title "${{ matrix.chart }} v${{ steps.new-version.outputs.new }}" \
             --notes "## ${{ matrix.chart }} v${{ steps.new-version.outputs.new }}
 
@@ -193,14 +246,14 @@ jobs:
 
             ### Installation
             \`\`\`bash
-            helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs
+            helm repo add suse-ai-greendocs https://suse.github.io/suse-ai-greendocs
             helm repo update
             helm install my-release suse-ai-greendocs/${{ matrix.chart }} --version ${{ steps.new-version.outputs.new }}
             \`\`\`
 
             ### Chart Archive
             - 📦 [${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz](.helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz)" \
-            .helm-releases/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz
+            "$CHART_FILE" || echo "Failed to create release, but continuing..."
 
   publish-pages:
     needs: release-charts
@@ -258,6 +311,33 @@ jobs:
                   <p><strong>Installation:</strong></p>
                   <code>helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs</code><br>
                   <code>helm install hr-assistant suse-ai-greendocs/suse-ai-hr-assistant</code>
+              </div>
+
+              <div class="chart">
+                  <h3>suse-ai-compare</h3>
+                  <p>SUSE AI Compare - Enterprise AI response comparison platform with comprehensive observability</p>
+                  <div class="version">Latest version available in index.yaml</div>
+                  <p><strong>Installation:</strong></p>
+                  <code>helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs</code><br>
+                  <code>helm install ai-compare suse-ai-greendocs/suse-ai-compare</code>
+              </div>
+
+              <div class="chart">
+                  <h3>suse-ai-compare-suse</h3>
+                  <p>SUSE AI Compare SUSE Edition - Enterprise-hardened with SUSE BCI containers and NeuVector security</p>
+                  <div class="version">Latest version available in index.yaml</div>
+                  <p><strong>Installation:</strong></p>
+                  <code>helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs</code><br>
+                  <code>helm install ai-compare-suse suse-ai-greendocs/suse-ai-compare-suse</code>
+              </div>
+
+              <div class="chart">
+                  <h3>suse-ai-compare-opentelemetry</h3>
+                  <p>SUSE AI Compare OpenTelemetry Edition - Advanced GenAI observability with token tracking and cost analysis</p>
+                  <div class="version">Latest version available in index.yaml</div>
+                  <p><strong>Installation:</strong></p>
+                  <code>helm repo add suse-ai-greendocs https://your-org.github.io/suse-ai-greendocs</code><br>
+                  <code>helm install ai-compare-otel suse-ai-greendocs/suse-ai-compare-opentelemetry</code>
               </div>
 
               <h2>Repository Setup</h2>

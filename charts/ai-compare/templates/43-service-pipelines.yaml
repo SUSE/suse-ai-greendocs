@@ -1,0 +1,17 @@
+{{- if .Values.pipelines.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: pipelines-service
+  labels:
+    app: pipelines
+spec:
+  selector:
+    app: pipelines
+  ports:
+  - name: http
+    port: {{ .Values.pipelines.service.port }}
+    targetPort: {{ .Values.pipelines.service.port }}
+    protocol: TCP
+  type: {{ .Values.pipelines.service.type }}
+{{- end }}

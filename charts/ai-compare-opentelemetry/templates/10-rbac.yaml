@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ai-compare-service-account
+  labels:
+    app: ai-compare
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ai-compare-configmap-manager
+  labels:
+    app: ai-compare
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "create", "update", "patch"]
+  resourceNames: ["ai-compare-config", "{{ include "ai-compare-opentelemetry.fullname" . }}-demo-config"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ai-compare-configmap-binding
+  labels:
+    app: ai-compare
+subjects:
+- kind: ServiceAccount
+  name: ai-compare-service-account
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: ai-compare-configmap-manager
+  apiGroup: rbac.authorization.k8s.io

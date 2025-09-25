@@ -1,0 +1,173 @@
+# Default values for ai-compare chart
+
+# -- Global image pull policy
+imagePullPolicy: Always
+# -- Default pull secrets (can be overridden, e.g., for SUSE chart)
+imagePullSecrets: []
+# -- Application settings
+ollama:
+  image:
+    repository: ollama/ollama
+    tag: "0.11.4"
+  service:
+    port: 11434
+    type: ClusterIP
+  gpu:
+    enabled: true
+  # -- Hardware Configuration for Ollama
+  hardware:
+    type: "nvidia" # Options: "nvidia", "apple"
+  # -- OpenTelemetry observability for Ollama
+  observability:
+    enabled: false # Set to true to enable OpenTelemetry instrumentation
+    otlpEndpoint: "http://opentelemetry-collector.suse-observability.svc.cluster.local:4318"
+  # -- Resource allocation for the main Ollama container
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "2Gi"
+    limits:
+      cpu: "4"
+      memory: "16Gi"
+  persistence:
+    enabled: false
+    size: 10Gi
+    storageClassName: "" # Use default if empty, or specify a storage class
+  # Model caching options
+  modelCache:
+    # NFS-based model caching for shared storage across deployments
+    nfs:
+      enabled: false
+      server: "10.0.9.10" # NFS server IP/hostname
+      path: "/data/ai-models" # NFS share path for caching models
+openWebui:
+  image:
+    repository: ghcr.io/open-webui/open-webui
+    tag: "0.6.18" # Pipeline-enabled version
+  service:
+    port: 8080
+    type: NodePort
+  # Pipeline integration settings
+  pipelines:
+    enabled: true
+    url: "http://pipelines-service:9099"
+# Open WebUI Pipelines Service
+pipelines:
+  enabled: true
+  image:
+    repository: ghcr.io/open-webui/pipelines
+    tag: "main"
+  service:
+    port: 9099
+    type: ClusterIP
+  # Pipeline deployment from git repo
+  git:
+    enabled: true
+    repo: "https://github.com/wiredquill/ai-demos.git"
+    branch: "main"
+    path: "pipelines"
+  # Pipeline configuration
+  config:
+    pipelineMode: "auto-cycle"
+    logLevel: "INFO"
+  # Auto-configuration settings
+  autoConfig:
+    enabled: true
+    apiKey: "0p3n-w3bu!"
+    modelId: "response_level"
+    connectionName: "Response Level Pipeline"
+aiCompare:
+  image:
+    repository: ghcr.io/wiredquill/ai-demos
+    tag: "5b324bd"
+  service:
+    port: 7860
+    type: NodePort
+  persistence:
+    enabled: false
+    size: 1Gi
+    storageClassName: ""
+  # Automation settings for the recurring test runner
+  automation:
+    enabled: false
+    defaultPrompt: "Why is the sky blue? Be concise."
+    intervalSeconds: 30
+    sendMessages: true # Enable/disable sending test messages to models
+  # Observability settings for OpenTelemetry and OpenLit (development option)
+  observability:
+    enabled: false # Disabled by default - development/testing option only
+    otlpEndpoint: "http://opentelemetry-collector.suse-observability.svc.cluster.local:4318"
+    collectGpuStats: false
+    schedule: "*/5 * * * *"
+  # HTTP API server for observable traffic generation
+  httpApi:
+    enabled: true
+    port: 8080
+  # Resource allocation for AI Compare app
+  resources:
+    requests:
+      cpu: "500m" # Increased from 200m for better performance
+      memory: "1Gi" # Increased from 512Mi for more headroom
+    limits:
+      cpu: "2000m" # Increased from 1000m for handling spikes
+      memory: "4Gi" # Increased from 2Gi for better caching
+# HTTP Load Simulator (replaces frontend UI for traffic generation)
+frontend:
+  enabled: false # Disabled by default - enable for HTTP traffic generation
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  # Load simulator configuration
+  loadSimulator:
+    enabled: true
+    image:
+      repository: ghcr.io/wiredquill/ai-demos-load-simulator
+      tag: "latest"
+    # Load simulation settings
+    intervalSeconds: 30 # Send requests every 30 seconds
+    requestTimeout: 30 # HTTP request timeout
+    # Custom prompts (optional) - if not provided, uses built-in defaults
+    customPrompts: []
+    # Example custom prompts:
+    # customPrompts:
+    #   - "Explain SUSE Observability benefits"
+    #   - "How does Kubernetes improve application deployment?"
+    #   - "What are the advantages of using containers?"
+  service:
+    type: ClusterIP
+    port: 80 # Not used by load simulator, but kept for compatibility
+    annotations: {}
+  resources:
+    limits:
+      cpu: 100m # Lower CPU - just sending HTTP requests
+      memory: 128Mi # Lower memory - minimal Python script
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+# Demo Configuration for Observable Failures
+demo:
+  # ConfigMap-based availability demo
+  availability:
+    # Key that application reads for model configuration
+    configKey: "models-latest" # Change to "models_latest" to break app
+    # Real config value that works
+    validValue: "tinyllama:latest"
+    # Invalid config that causes observable failures
+    invalidValue: "broken-model:invalid"
+# NeuVector Security Configuration
+neuvector:
+  enabled: false

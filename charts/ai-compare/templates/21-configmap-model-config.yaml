@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-compare-config
+  labels:
+    app: ai-compare
+data:
+  MODEL_CONFIG: "models-latest"
+  UPDATED_AT: "{{ now | date "2006-01-02 15:04:05" }}"
+  DESCRIPTION: "Model configuration for SUSE Observability demo"

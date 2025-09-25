@@ -1,0 +1,28 @@
+apiVersion: v2
+name: ai-compare
+description: "SUSE AI Compare - Enterprise AI response comparison platform with comprehensive observability. Features Ollama, Open WebUI, pipelines, and custom chat interface. Built with SUSE-hardened container images, GPU support, and integrated security monitoring."
+type: application
+version: 0.1.4
+appVersion: "latest"
+icon: https://www.suse.com/assets/img/suse-black-logo-green.svg
+keywords:
+  - ai
+  - llm
+  - ollama
+  - machine-learning
+  - opentelemetry
+  - observability
+  - demo
+  - comparison
+  - suse
+  - enterprise
+home: https://www.suse.com/products/ai/
+sources:
+  - https://github.com/wiredquill/ai-demos
+maintainers:
+  - name: SUSE AI Team
+    email: ai-team@suse.com
+annotations:
+  category: AI/ML
+  licenses: MIT
+# Test trigger for workflow

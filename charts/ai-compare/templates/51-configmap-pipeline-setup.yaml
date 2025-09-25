@@ -1,0 +1,133 @@
+{{- if .Values.pipelines.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ai-compare.fullname" . }}-pipeline-config
+  labels:
+    app.kubernetes.io/name: {{ include "ai-compare.fullname" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: pipeline-config
+data:
+  pipeline-setup.sh: |
+    #!/bin/sh
+    # Open WebUI Pipeline Auto-Configuration Script
+    
+    OPEN_WEBUI_URL="http://open-webui-service:8080"
+    PIPELINES_URL="http://pipelines-service:9099"
+    PIPELINE_API_KEY="0p3n-w3bu!"
+    
+    echo "🚀 Starting Open WebUI Pipeline Configuration..."
+    
+    # Function to wait for service
+    wait_for_service() {
+      local url=$1
+      local name=$2
+      local max_attempts=30
+      
+      echo "⏳ Waiting for $name to be ready..."
+      for i in $(seq 1 $max_attempts); do
+        if curl -s -f "$url" > /dev/null 2>&1; then
+          echo "✅ $name is ready"
+          return 0
+        fi
+        echo "   Attempt $i/$max_attempts: $name not ready, waiting 10s..."
+        sleep 10
+      done
+      
+      echo "❌ $name failed to become ready after $max_attempts attempts"
+      return 1
+    }
+    
+    # Wait for services to be ready
+    wait_for_service "$OPEN_WEBUI_URL/" "Open WebUI"
+    wait_for_service "$PIPELINES_URL/" "Pipelines Service"
+    
+    # Test pipeline functionality
+    echo "🧪 Testing pipeline functionality..."
+    TEST_RESPONSE=$(curl -s -X POST "$PIPELINES_URL/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "response_level",
+        "messages": [{"role": "user", "content": "Configuration test"}],
+        "stream": false
+      }' 2>/dev/null || echo '{"error": "test failed"}')
+    
+    if echo "$TEST_RESPONSE" | grep -q "response_level"; then
+      echo "✅ Pipeline response_level model is working"
+    else
+      echo "⚠️  Pipeline test issue: $TEST_RESPONSE"
+    fi
+    
+    # Output configuration details
+    echo ""
+    echo "📋 ============================================"
+    echo "📋 PIPELINE CONFIGURATION READY"
+    echo "📋 ============================================"
+    echo "📋"
+    echo "📋 🔗 Pipeline Service: $PIPELINES_URL"
+    echo "📋 🔑 API Key: $PIPELINE_API_KEY"
+    echo "📋 🤖 Model ID: response_level"
+    echo "📋"
+    echo "📋 🎓 Education Levels Available:"
+    echo "📋   1. Default: Standard AI responses"
+    echo "📋   2. Kid Mode: Simple 5-year-old explanations"
+    echo "📋   3. Young Scientist: Age 12 science details"
+    echo "📋   4. College Student: Technical analysis"
+    echo "📋   5. Scientific: Full technical precision"
+    echo "📋"
+    echo "📋 ⚙️  Manual Setup (if needed):"
+    echo "📋   1. Open WebUI → Admin Panel → Settings → Connections"
+    echo "📋   2. Add Connection:"
+    echo "📋      • API Base URL: $PIPELINES_URL"
+    echo "📋      • API Key: $PIPELINE_API_KEY"
+    echo "📋      • Name: Response Level Pipeline"
+    echo "📋   3. Enable 'response_level' model in Models section"
+    echo "📋"
+    echo "📋 ============================================"
+    
+  openwebui-env.sh: |
+    #!/bin/sh
+    # Environment variables for Open WebUI pipeline integration
+    export WEBUI_PIPELINE_URL="http://pipelines-service:9099"
+    export WEBUI_PIPELINE_API_KEY="0p3n-w3bu!"
+    
+  pipeline-info.json: |
+    {
+      "pipeline_service": {
+        "url": "http://pipelines-service:9099",
+        "api_key": "0p3n-w3bu!",
+        "model_id": "response_level",
+        "health_endpoint": "/",
+        "status": "automated_deployment"
+      },
+      "education_levels": [
+        {
+          "level": 1,
+          "name": "Default",
+          "description": "Standard AI responses without modification"
+        },
+        {
+          "level": 2, 
+          "name": "Kid Mode",
+          "description": "Explain like I'm 5 years old using simple words and fun examples"
+        },
+        {
+          "level": 3,
+          "name": "Young Scientist", 
+          "description": "Explain like I'm 12 years old with science details but understandable"
+        },
+        {
+          "level": 4,
+          "name": "College Student",
+          "description": "Explain with technical context, examples, and deeper analysis"
+        },
+        {
+          "level": 5,
+          "name": "Scientific",
+          "description": "Full scientific explanation with precise terminology and technical accuracy"
+        }
+      ],
+      "auto_cycle": true,
+      "deployment_timestamp": "{{ now | date "2006-01-02T15:04:05Z" }}"
+    }
+{{- end }}
