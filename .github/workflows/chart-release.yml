@@ -15,9 +15,9 @@ on:
         type: choice
         options:
           - suse-ai-hr-assistant
-          - suse-ai-compare
-          - suse-ai-compare-suse
-          - suse-ai-compare-opentelemetry
+          - ai-compare
+          - ai-compare-suse
+          - ai-compare-opentelemetry
       version_bump:
         description: 'Version bump type'
         required: true
