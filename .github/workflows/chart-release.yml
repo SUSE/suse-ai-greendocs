@@ -47,27 +47,52 @@ jobs:
         id: changes
         run: |
           CHANGED_CHARTS_JSON="[]"
+
+          echo "=== Debug Info ==="
+          echo "Event name: ${{ github.event_name }}"
+          echo "Changed files:"
+          git diff --name-only HEAD~1 HEAD || echo "No diff available"
+
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "Manual workflow dispatch detected"
             CHANGED_CHARTS_JSON="[\"${{ github.event.inputs.chart_name }}\"]"
           else
+            echo "Checking for Chart.yaml changes..."
             CHARTS_ARRAY=""
-            for chart in charts/*/Chart.yaml; do
-              chart_dir=$(dirname "$chart")
-              chart_name=$(basename "$chart_dir")
-              if git diff --name-only HEAD~1 HEAD | grep -q "^${chart_dir}/"; then
-                if [ -n "$CHARTS_ARRAY" ]; then
-                  CHARTS_ARRAY="${CHARTS_ARRAY},\"${chart_name}\""
-                else
-                  CHARTS_ARRAY="\"${chart_name}\""
+
+            # Only process if we find any Chart.yaml files that changed
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+            echo "All changed files: $CHANGED_FILES"
+
+            if echo "$CHANGED_FILES" | grep -q "charts/.*/Chart\.yaml"; then
+              echo "Chart.yaml changes detected"
+              for chart in charts/*/Chart.yaml; do
+                if [ -f "$chart" ]; then
+                  chart_dir=$(dirname "$chart")
+                  chart_name=$(basename "$chart_dir")
+                  echo "Checking chart: $chart_name in $chart_dir"
+
+                  if echo "$CHANGED_FILES" | grep -q "^${chart_dir}/"; then
+                    echo "Changes found in $chart_name"
+                    if [ -n "$CHARTS_ARRAY" ]; then
+                      CHARTS_ARRAY="${CHARTS_ARRAY},\"${chart_name}\""
+                    else
+                      CHARTS_ARRAY="\"${chart_name}\""
+                    fi
+                  fi
                 fi
-              fi
-            done
+              done
+            else
+              echo "No Chart.yaml files changed"
+            fi
+
             if [ -n "$CHARTS_ARRAY" ]; then
               CHANGED_CHARTS_JSON="[${CHARTS_ARRAY}]"
             fi
           fi
+
+          echo "Final result: $CHANGED_CHARTS_JSON"
           echo "charts=$CHANGED_CHARTS_JSON" >> $GITHUB_OUTPUT
-          echo "Detected changed charts: $CHANGED_CHARTS_JSON"
 
   release-charts:
     needs: detect-changes
