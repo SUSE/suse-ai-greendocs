@@ -51,6 +51,13 @@ questions:
     - "NodePort"
     - "LoadBalancer"
 
+- variable: neuvector.enabled
+  group: General
+  label: "Enable SUSE Security (NeuVector)"
+  description: "Deploy NeuVector DLP sensors for credit card and SSN detection demos. Uses declarative YAML configuration."
+  type: "boolean"
+  default: true
+
 # Ollama Deployment Configuration
 - variable: ollama.models[0]
   group: "Ollama Deployment"
