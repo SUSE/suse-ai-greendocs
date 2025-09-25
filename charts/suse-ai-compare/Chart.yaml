@@ -4,6 +4,7 @@ description: "SUSE AI Compare - Enterprise AI response comparison platform with 
 type: application
 version: 0.1.1
 appVersion: "latest"
+icon: https://www.suse.com/assets/img/suse-black-logo-green.svg
 keywords:
   - ai
   - llm

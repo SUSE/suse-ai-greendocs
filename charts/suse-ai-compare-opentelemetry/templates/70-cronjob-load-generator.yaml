@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "ai-compare-opentelemetry.fullname" . }}-load-gen
+  name: {{ include "ai-compare-opentelemetry.fullname" . }}-cron
   labels:
     {{- include "ai-compare-opentelemetry.labels" . | nindent 4 }}
     app.kubernetes.io/component: load-generator
