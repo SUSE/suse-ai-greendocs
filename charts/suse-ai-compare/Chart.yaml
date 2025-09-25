@@ -2,7 +2,7 @@ apiVersion: v2
 name: suse-ai-compare
 description: "SUSE AI Compare - Enterprise AI response comparison platform with comprehensive observability. Features Ollama, Open WebUI, pipelines, and custom chat interface. Built with SUSE-hardened container images, GPU support, and integrated security monitoring."
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "latest"
 keywords:
   - ai

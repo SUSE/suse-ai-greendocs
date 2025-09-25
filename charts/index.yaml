@@ -9,7 +9,7 @@ entries:
           name: bci-busybox
     apiVersion: v2
     appVersion: 0.11.4
-    created: "2025-09-24T17:57:40.644185204Z"
+    created: "2025-09-25T01:18:39.97975407Z"
     description: Get up and running with Llama 3.2, Mistral, Gemma 2, and other large
       language models.
     digest: 35d0eb96d2de03c99452fa8b1cf3cfaa4b42df620d44ff0eb94e9e61a2e81036
@@ -31,10 +31,44 @@ entries:
     urls:
     - ollama-1.26.0.tgz
     version: 1.26.0
+  suse-ai-compare:
+  - annotations:
+      category: AI/ML
+      licenses: MIT
+    apiVersion: v2
+    appVersion: latest
+    created: "2025-09-25T01:18:39.98275853Z"
+    description: SUSE AI Compare - Enterprise AI response comparison platform with
+      comprehensive observability. Features Ollama, Open WebUI, pipelines, and custom
+      chat interface. Built with SUSE-hardened container images, GPU support, and
+      integrated security monitoring.
+    digest: 5f31e366b13419988a962432e57077d2b7bf6a12a64f0326bb5e4715d99db2df
+    home: https://www.suse.com/products/ai/
+    keywords:
+    - ai
+    - llm
+    - ollama
+    - machine-learning
+    - opentelemetry
+    - observability
+    - demo
+    - comparison
+    - suse
+    - enterprise
+    maintainers:
+    - email: ai-team@suse.com
+      name: SUSE AI Team
+    name: suse-ai-compare
+    sources:
+    - https://github.com/wiredquill/ai-demos
+    type: application
+    urls:
+    - suse-ai-compare-0.1.1.tgz
+    version: 0.1.1
   suse-ai-hr-assistant:
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-24T17:57:40.671100964Z"
+    created: "2025-09-25T01:18:40.003797752Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -65,7 +99,7 @@ entries:
     version: 0.2.15
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-24T17:57:40.667374033Z"
+    created: "2025-09-25T01:18:40.000865439Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -96,7 +130,7 @@ entries:
     version: 0.2.14
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-24T17:57:40.663621177Z"
+    created: "2025-09-25T01:18:39.997248563Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -127,7 +161,7 @@ entries:
     version: 0.2.12
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-24T17:57:40.66175855Z"
+    created: "2025-09-25T01:18:39.995361976Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -158,7 +192,7 @@ entries:
     version: 0.2.10
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-24T17:57:40.659924115Z"
+    created: "2025-09-25T01:18:39.992806686Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -189,7 +223,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-24T17:57:40.673024215Z"
+    created: "2025-09-25T01:18:40.006460155Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -220,7 +254,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-24T17:57:40.656512217Z"
+    created: "2025-09-25T01:18:39.990982425Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -251,7 +285,7 @@ entries:
     version: 0.1.6
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-24T17:57:40.653014039Z"
+    created: "2025-09-25T01:18:39.989155018Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -282,7 +316,7 @@ entries:
     version: 0.1.5
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-24T17:57:40.649490203Z"
+    created: "2025-09-25T01:18:39.986642252Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -313,7 +347,7 @@ entries:
     version: 0.1.4
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-24T17:57:40.646114126Z"
+    created: "2025-09-25T01:18:39.984658462Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -342,4 +376,4 @@ entries:
     urls:
     - suse-ai-hr-assistant-0.1.3.tgz
     version: 0.1.3
-generated: "2025-09-24T17:57:40.642632128Z"
+generated: "2025-09-25T01:18:39.978179766Z"
