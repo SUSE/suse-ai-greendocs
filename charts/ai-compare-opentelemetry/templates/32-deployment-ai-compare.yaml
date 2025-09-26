@@ -96,7 +96,10 @@ spec:
             - name: TRACE_REQUESTS_ENABLED
               value: "{{ .Values.aiCompare.observability.traceRequests }}"
             # Clean OpenLit configuration (following ravan/llm-experiments pattern)
-            # (COLLECT_GPU_STATS and OLLAMA_ENDPOINT already defined above)
+            - name: COLLECT_GPU_STATS
+              value: "{{ .Values.aiCompare.observability.collectGpuStats }}"
+            - name: OLLAMA_ENDPOINT
+              value: "http://ollama-service:11434"
             # Model configuration for demo
             - name: MODEL_CONFIG
               valueFrom:

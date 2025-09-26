@@ -1,0 +1,41 @@
+{{- if .Values.neuvector.enabled }}
+# NeuVector network security rule for AI Compare OpenTelemetry monitoring
+apiVersion: neuvector.com/v1
+kind: NvSecurityRule
+metadata:
+  name: {{ include "ai-compare-opentelemetry.fullname" . }}-ai-monitoring
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ai-compare-opentelemetry.labels" . | nindent 4 }}
+spec:
+  target:
+    selector:
+      name: {{ include "ai-compare-opentelemetry.fullname" . }}
+  ingress:
+  - action: allow
+    name: allow-ai-chat-traffic
+    selector:
+      name: external
+    ports: "7860/tcp"
+  - action: allow
+    name: allow-health-checks
+    selector:
+      name: nodes
+    ports: "8080/tcp"
+  egress:
+  - action: allow
+    name: allow-ollama-access
+    selector:
+      name: ollama
+    ports: "11434/tcp"
+  - action: allow
+    name: allow-webui-access
+    selector:
+      name: open-webui
+    ports: "8080/tcp"
+  - action: allow
+    name: allow-telemetry-export
+    selector:
+      name: opentelemetry-collector
+    ports: "4318/tcp"
+{{- end }}

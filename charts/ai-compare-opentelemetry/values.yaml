@@ -8,8 +8,8 @@ imagePullSecrets:
 # -- Application settings
 ollama:
   image:
-    repository: ollama/ollama
-    tag: "0.3.14"
+    repository: dp.apps.rancher.io/containers/ollama
+    tag: "0.11.4"
   service:
     port: 11434
     type: ClusterIP
@@ -44,8 +44,8 @@ ollama:
       path: "/data/ai-models" # NFS share path for caching models
 openWebui:
   image:
-    repository: ghcr.io/open-webui/open-webui
-    tag: "0.3.32"
+    repository: dp.apps.rancher.io/containers/open-webui
+    tag: "0.6.18" # SUSE Application Collection version with enterprise hardening
   service:
     port: 8080
     type: NodePort
@@ -67,8 +67,8 @@ openWebui:
 pipelines:
   enabled: true
   image:
-    repository: ghcr.io/open-webui/pipelines
-    tag: "main"
+    repository: dp.apps.rancher.io/containers/open-webui-pipelines
+    tag: "0.20250329.151219" # Current SUSE Application Collection version
   service:
     port: 9099
     type: ClusterIP
@@ -91,7 +91,7 @@ pipelines:
 aiCompare:
   image:
     repository: ghcr.io/wiredquill/ai-demos-suse
-    tag: "5b324bd"
+    tag: "6336344"
   service:
     port: 7860
     type: NodePort
