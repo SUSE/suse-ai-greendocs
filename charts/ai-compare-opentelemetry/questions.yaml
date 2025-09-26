@@ -59,6 +59,13 @@ questions:
     - "NodePort"
     - "LoadBalancer"
 
+- variable: neuvector.enabled
+  group: General
+  label: "Enable SUSE Security (NeuVector)"
+  description: "Deploy NeuVector network security rules and DLP sensors for security demos. Uses declarative YAML configuration."
+  type: "boolean"
+  default: false
+
 # Ollama Deployment Configuration
 - variable: ollama.models[0]
   group: "Ollama Deployment"
@@ -175,10 +182,3 @@ questions:
   description: "Enable HTTP metrics, request tracing, and performance monitoring for Ollama server"
   type: "boolean"
   default: true
-
-- variable: neuvector.enabled
-  group: "OpenTelemetry Observability"
-  label: "Enable Security Monitoring (NeuVector)"
-  description: "Deploy NeuVector DLP sensors for security event monitoring and observability"
-  type: "boolean"
-  default: false
