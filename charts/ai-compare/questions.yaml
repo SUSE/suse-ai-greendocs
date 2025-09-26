@@ -56,7 +56,7 @@ questions:
   label: "Enable SUSE Security (NeuVector)"
   description: "Deploy NeuVector DLP sensors for credit card and SSN detection demos. Uses declarative YAML configuration."
   type: "boolean"
-  default: true
+  default: false
 
 # Ollama Deployment Configuration
 - variable: ollama.models[0]
