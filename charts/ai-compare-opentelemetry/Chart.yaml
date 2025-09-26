@@ -1,10 +1,9 @@
 apiVersion: v2
 name: ai-compare-opentelemetry
-description: "SUSE AI Compare OpenTelemetry Edition - Advanced observability-focused AI response comparison platform. Features comprehensive GenAI telemetry, token-level cost tracking, model performance monitoring, and deep integration with SUSE Observability."
+description: "AI Compare OpenTelemetry Edition - Advanced observability-focused AI response comparison platform. Features comprehensive GenAI telemetry, token-level cost tracking, model performance monitoring, and deep integration with SUSE Observability."
 type: application
-version: 0.1.4
-appVersion: "latest"
-icon: https://www.suse.com/assets/img/suse-black-logo-green.svg
+version: 0.1.356
+appVersion: "1.0.0"
 keywords:
   - ai
   - llm
@@ -18,14 +17,12 @@ keywords:
   - tokens
   - cost-tracking
   - demo
-  - suse
-  - enterprise
-home: https://www.suse.com/products/ai/
+home: https://github.com/wiredquill/ai-demos
 sources:
   - https://github.com/wiredquill/ai-demos
 maintainers:
-  - name: SUSE AI Team
-    email: ai-team@suse.com
+  - name: AI Compare OpenTelemetry Team
+    email: noreply@anthropic.com
 annotations:
   category: AI/ML
   licenses: MIT
