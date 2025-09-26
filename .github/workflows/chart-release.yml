@@ -7,7 +7,8 @@ on:
       - 'charts/*/values.yaml'
     branches:
       - main
-      - charts-for-ai-demo-apps
+      # Disabled on working branch to prevent conflicts
+      # - charts-for-ai-demo-apps
   workflow_dispatch:
     inputs:
       chart_name:
