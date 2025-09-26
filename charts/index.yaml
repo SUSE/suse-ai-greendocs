@@ -6,7 +6,7 @@ entries:
       licenses: MIT
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-09-26T12:36:09.164363-07:00"
+    created: "2025-09-26T21:27:11.626369487Z"
     description: AI Compare - Side-by-side AI response comparison platform. Features
       Ollama, Open WebUI, pipelines, and custom chat interface. Built on upstream
       open-source components with GPU support, observability integration, and security
@@ -31,14 +31,14 @@ entries:
     - https://github.com/wiredquill/ai-demos
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/ai-compare-0.1.355.tgz
+    - ai-compare-0.1.355.tgz
     version: 0.1.355
   - annotations:
       category: AI/ML
       licenses: MIT
     apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.162649-07:00"
+    created: "2025-09-26T21:27:11.625330325Z"
     description: SUSE AI Compare - Enterprise AI response comparison platform with
       comprehensive observability. Features Ollama, Open WebUI, pipelines, and custom
       chat interface. Built with SUSE-hardened container images, GPU support, and
@@ -65,14 +65,14 @@ entries:
     - https://github.com/wiredquill/ai-demos
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/ai-compare-0.1.348.tgz
+    - ai-compare-0.1.348.tgz
     version: 0.1.348
   - annotations:
       category: AI/ML
       licenses: MIT
     apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.165288-07:00"
+    created: "2025-09-26T21:27:11.627354037Z"
     description: SUSE AI Compare - Enterprise AI response comparison platform with
       comprehensive observability. Features Ollama, Open WebUI, pipelines, and custom
       chat interface. Built with SUSE-hardened container images, GPU support, and
@@ -99,7 +99,7 @@ entries:
     - https://github.com/wiredquill/ai-demos
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/ai-compare-0.1.4.tgz
+    - ai-compare-0.1.4.tgz
     version: 0.1.4
   ai-compare-opentelemetry:
   - annotations:
@@ -109,7 +109,44 @@ entries:
       opentelemetry.io/instrumented: "true"
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-09-26T12:36:09.168295-07:00"
+    created: "2025-09-26T21:27:11.631946023Z"
+    description: AI Compare OpenTelemetry Edition - Advanced observability-focused
+      AI response comparison platform. Features comprehensive GenAI telemetry, token-level
+      cost tracking, model performance monitoring, and deep integration with SUSE
+      Observability.
+    digest: fd154474c942c2a0ae2a66b36d4c72134279062a42c29727c67e79dec5ef6b8c
+    home: https://github.com/wiredquill/ai-demos
+    keywords:
+    - ai
+    - llm
+    - ollama
+    - machine-learning
+    - opentelemetry
+    - observability
+    - telemetry
+    - monitoring
+    - genai
+    - tokens
+    - cost-tracking
+    - demo
+    maintainers:
+    - email: noreply@anthropic.com
+      name: AI Compare OpenTelemetry Team
+    name: ai-compare-opentelemetry
+    sources:
+    - https://github.com/wiredquill/ai-demos
+    type: application
+    urls:
+    - ai-compare-opentelemetry-0.1.356.tgz
+    version: 0.1.356
+  - annotations:
+      category: AI/ML
+      licenses: MIT
+      observability.suse.com/compatible: "true"
+      opentelemetry.io/instrumented: "true"
+    apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-09-26T21:27:11.630526109Z"
     description: AI Compare OpenTelemetry Edition - Advanced observability-focused
       AI response comparison platform. Features comprehensive GenAI telemetry, token-level
       cost tracking, model performance monitoring, and deep integration with SUSE
@@ -137,7 +174,7 @@ entries:
     - https://github.com/wiredquill/ai-demos
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/ai-compare-opentelemetry-0.1.355.tgz
+    - ai-compare-opentelemetry-0.1.355.tgz
     version: 0.1.355
   - annotations:
       category: AI/ML
@@ -146,7 +183,7 @@ entries:
       opentelemetry.io/instrumented: "true"
     apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.166508-07:00"
+    created: "2025-09-26T21:27:11.628549191Z"
     description: SUSE AI Compare OpenTelemetry Edition - Advanced observability-focused
       AI response comparison platform. Features comprehensive GenAI telemetry, token-level
       cost tracking, model performance monitoring, and deep integration with SUSE
@@ -177,7 +214,7 @@ entries:
     - https://github.com/wiredquill/ai-demos
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/ai-compare-opentelemetry-0.1.348.tgz
+    - ai-compare-opentelemetry-0.1.348.tgz
     version: 0.1.348
   - annotations:
       category: AI/ML
@@ -186,7 +223,7 @@ entries:
       opentelemetry.io/instrumented: "true"
     apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.169627-07:00"
+    created: "2025-09-26T21:27:11.63313762Z"
     description: SUSE AI Compare OpenTelemetry Edition - Advanced observability-focused
       AI response comparison platform. Features comprehensive GenAI telemetry, token-level
       cost tracking, model performance monitoring, and deep integration with SUSE
@@ -217,7 +254,7 @@ entries:
     - https://github.com/wiredquill/ai-demos
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/ai-compare-opentelemetry-0.1.4.tgz
+    - ai-compare-opentelemetry-0.1.4.tgz
     version: 0.1.4
   ai-compare-suse:
   - annotations:
@@ -227,7 +264,7 @@ entries:
       suse.com/certified: "true"
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-09-26T12:36:09.17142-07:00"
+    created: "2025-09-26T21:27:11.635211517Z"
     description: AI Compare SUSE Edition - Enterprise AI response comparison platform
       optimized for SUSE environments. Features SUSE BCI images, native SUSE Observability
       integration, NeuVector security demos, and full SUSE cloud-native stack compatibility.
@@ -253,7 +290,7 @@ entries:
     - https://github.com/wiredquill/ai-demos
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/ai-compare-suse-0.1.355.tgz
+    - ai-compare-suse-0.1.355.tgz
     version: 0.1.355
   - annotations:
       category: AI/ML
@@ -262,7 +299,7 @@ entries:
       suse.com/certified: "true"
     apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.170691-07:00"
+    created: "2025-09-26T21:27:11.634188444Z"
     description: SUSE AI Compare SUSE Edition - Enterprise AI response comparison
       platform optimized for SUSE environments. Features SUSE BCI images, native SUSE
       Observability integration, NeuVector security demos, and full SUSE cloud-native
@@ -290,7 +327,7 @@ entries:
     - https://github.com/wiredquill/ai-demos
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/ai-compare-suse-0.1.348.tgz
+    - ai-compare-suse-0.1.348.tgz
     version: 0.1.348
   - annotations:
       category: AI/ML
@@ -299,7 +336,7 @@ entries:
       suse.com/certified: "true"
     apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.172617-07:00"
+    created: "2025-09-26T21:27:11.636839146Z"
     description: SUSE AI Compare SUSE Edition - Enterprise AI response comparison
       platform optimized for SUSE environments. Features SUSE BCI images, native SUSE
       Observability integration, NeuVector security demos, and full SUSE cloud-native
@@ -327,12 +364,12 @@ entries:
     - https://github.com/wiredquill/ai-demos
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/ai-compare-suse-0.1.4.tgz
+    - ai-compare-suse-0.1.4.tgz
     version: 0.1.4
   suse-ai-hr-assistant:
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.193977-07:00"
+    created: "2025-09-26T21:27:11.664367371Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -359,11 +396,11 @@ entries:
     - https://ollama.ai/
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/suse-ai-hr-assistant-0.2.15.tgz
+    - suse-ai-hr-assistant-0.2.15.tgz
     version: 0.2.15
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.18998-07:00"
+    created: "2025-09-26T21:27:11.658453929Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -390,11 +427,11 @@ entries:
     - https://ollama.ai/
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/suse-ai-hr-assistant-0.2.14.tgz
+    - suse-ai-hr-assistant-0.2.14.tgz
     version: 0.2.14
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.187128-07:00"
+    created: "2025-09-26T21:27:11.653225707Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -421,11 +458,11 @@ entries:
     - https://ollama.ai/
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/suse-ai-hr-assistant-0.2.12.tgz
+    - suse-ai-hr-assistant-0.2.12.tgz
     version: 0.2.12
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.184931-07:00"
+    created: "2025-09-26T21:27:11.651018401Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -452,11 +489,11 @@ entries:
     - https://ollama.ai/
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/suse-ai-hr-assistant-0.2.10.tgz
+    - suse-ai-hr-assistant-0.2.10.tgz
     version: 0.2.10
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.183197-07:00"
+    created: "2025-09-26T21:27:11.649153876Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -483,11 +520,11 @@ entries:
     - https://ollama.ai/
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/suse-ai-hr-assistant-0.2.1.tgz
+    - suse-ai-hr-assistant-0.2.1.tgz
     version: 0.2.1
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.195793-07:00"
+    created: "2025-09-26T21:27:11.666545322Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -514,11 +551,11 @@ entries:
     - https://ollama.ai/
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/suse-ai-hr-assistant-0.2.8.tgz
+    - suse-ai-hr-assistant-0.2.8.tgz
     version: 0.2.1
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.181308-07:00"
+    created: "2025-09-26T21:27:11.645633066Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -545,11 +582,11 @@ entries:
     - https://ollama.ai/
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/suse-ai-hr-assistant-0.1.6.tgz
+    - suse-ai-hr-assistant-0.1.6.tgz
     version: 0.1.6
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.178654-07:00"
+    created: "2025-09-26T21:27:11.643006316Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -576,11 +613,11 @@ entries:
     - https://ollama.ai/
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/suse-ai-hr-assistant-0.1.5.tgz
+    - suse-ai-hr-assistant-0.1.5.tgz
     version: 0.1.5
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.176937-07:00"
+    created: "2025-09-26T21:27:11.64057606Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -607,11 +644,11 @@ entries:
     - https://ollama.ai/
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/suse-ai-hr-assistant-0.1.4.tgz
+    - suse-ai-hr-assistant-0.1.4.tgz
     version: 0.1.4
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-26T12:36:09.174967-07:00"
+    created: "2025-09-26T21:27:11.638725351Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -638,6 +675,6 @@ entries:
     - https://ollama.ai/
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/charts/suse-ai-hr-assistant-0.1.3.tgz
+    - suse-ai-hr-assistant-0.1.3.tgz
     version: 0.1.3
-generated: "2025-09-26T12:36:09.160931-07:00"
+generated: "2025-09-26T21:27:11.624127156Z"
