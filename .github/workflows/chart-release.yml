@@ -216,11 +216,13 @@ jobs:
           TARGET_BRANCH="${{ github.event.inputs.target_branch || 'charts-for-ai-demo-apps' }}"
           echo "Pushing changes to $TARGET_BRANCH branch..."
 
-          # Switch to target branch
-          git fetch origin
-          git checkout "$TARGET_BRANCH" || git checkout -b "$TARGET_BRANCH" origin/"$TARGET_BRANCH"
-          git merge --no-ff -
-          git push origin "$TARGET_BRANCH"
+          if [ "$TARGET_BRANCH" = "main" ]; then
+            # For main branch, push directly
+            git push origin HEAD:main
+          else
+            # For testing branch, create/update branch with current changes
+            git push origin HEAD:"$TARGET_BRANCH" --force
+          fi
 
           echo "::notice::Chart updated in $TARGET_BRANCH branch. Test before merging to main."
 
