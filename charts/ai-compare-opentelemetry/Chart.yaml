@@ -22,7 +22,7 @@ sources:
   - https://github.com/wiredquill/ai-demos
 maintainers:
   - name: AI Compare OpenTelemetry Team
-    email: noreply@anthropic.com
+    email: noreply@example.com
 annotations:
   category: AI/ML
   licenses: MIT
