@@ -6,13 +6,13 @@ entries:
       licenses: MIT
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-09-29T10:59:46.755001-07:00"
+    created: "2025-09-29T11:19:50.299074-07:00"
     description: AI Compare - Side-by-side AI response comparison platform. Features
       Ollama, Open WebUI, pipelines, and custom chat interface. Built on upstream
       open-source components with GPU support, observability integration, and security
       demonstrations. Showcases security differences between upstream and enterprise-hardened
       container images.
-    digest: e7f73c46779bbee7994dfa376da9c2401060561d08c5a1e79794fbfc20ea3aa7
+    digest: 214553975535c43a0668f855c7faab1456c2a0d3de4d4b0ef1fcbb248f3c4efc
     home: https://github.com/wiredquill/ai-demos
     keywords:
     - ai
@@ -31,8 +31,8 @@ entries:
     - https://github.com/wiredquill/ai-demos
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/ai-compare-0.1.356.tgz
-    version: 0.1.356
+    - https://suse.github.io/suse-ai-greendocs/ai-compare-0.1.358.tgz
+    version: 0.1.358
   ai-compare-opentelemetry:
   - annotations:
       category: AI/ML
@@ -41,12 +41,12 @@ entries:
       opentelemetry.io/instrumented: "true"
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-09-29T10:59:46.756129-07:00"
+    created: "2025-09-29T11:19:50.300217-07:00"
     description: AI Compare OpenTelemetry Edition - Advanced observability-focused
       AI response comparison platform. Features comprehensive GenAI telemetry, token-level
       cost tracking, model performance monitoring, and deep integration with SUSE
       Observability.
-    digest: 673f86d769c8f2c00df80ef785ea9e1f30755270442b522527c1273190495ab9
+    digest: 0cee55c18c65c073776deee29a626d9901d29c5db1400dceb49a21d20ece479a
     home: https://github.com/wiredquill/ai-demos
     keywords:
     - ai
@@ -69,8 +69,8 @@ entries:
     - https://github.com/wiredquill/ai-demos
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/ai-compare-opentelemetry-0.1.356.tgz
-    version: 0.1.356
+    - https://suse.github.io/suse-ai-greendocs/ai-compare-opentelemetry-0.1.358.tgz
+    version: 0.1.358
   ai-compare-suse:
   - annotations:
       category: AI/ML
@@ -79,11 +79,11 @@ entries:
       suse.com/certified: "true"
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-09-29T10:59:46.757293-07:00"
+    created: "2025-09-29T11:19:50.30101-07:00"
     description: AI Compare SUSE Edition - Enterprise AI response comparison platform
       optimized for SUSE environments. Features SUSE BCI images, native SUSE Observability
       integration, NeuVector security demos, and full SUSE cloud-native stack compatibility.
-    digest: 748059c10065b0a934dae8eade823794ea8ff31237a8d4263f88f982e725cfd1
+    digest: fe9d5a98052521df711941b27724c61140856800e80f9ccac5c1173ca9470733
     home: https://github.com/wiredquill/ai-demos
     keywords:
     - ai
@@ -105,12 +105,12 @@ entries:
     - https://github.com/wiredquill/ai-demos
     type: application
     urls:
-    - https://suse.github.io/suse-ai-greendocs/ai-compare-suse-0.1.356.tgz
-    version: 0.1.356
+    - https://suse.github.io/suse-ai-greendocs/ai-compare-suse-0.1.358.tgz
+    version: 0.1.358
   suse-ai-hr-assistant:
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-29T10:59:46.761072-07:00"
+    created: "2025-09-29T11:19:50.305557-07:00"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -139,4 +139,4 @@ entries:
     urls:
     - https://suse.github.io/suse-ai-greendocs/suse-ai-hr-assistant-0.2.16.tgz
     version: 0.2.16
-generated: "2025-09-29T10:59:46.753786-07:00"
+generated: "2025-09-29T11:19:50.297562-07:00"
