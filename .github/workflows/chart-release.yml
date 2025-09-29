@@ -1,14 +1,6 @@
 name: Chart Release and Auto-Update
 
 on:
-  push:
-    paths:
-      - 'charts/*/Chart.yaml'
-      - 'charts/*/values.yaml'
-    branches:
-      - main
-      # Disabled on working branch to prevent conflicts
-      # - charts-for-ai-demo-apps
   workflow_dispatch:
     inputs:
       chart_name:
@@ -28,6 +20,13 @@ on:
           - patch
           - minor
           - major
+      target_branch:
+        description: 'Target branch for testing'
+        required: true
+        type: choice
+        options:
+          - charts-for-ai-demo-apps
+          - main
 
 permissions:
   contents: write
@@ -112,8 +111,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git config user.name "wiredquill"
+          git config user.email "wiredquill@users.noreply.github.com"
 
       - name: Install Helm
         uses: azure/setup-helm@v4
@@ -204,19 +203,26 @@ jobs:
           git add charts/${{ matrix.chart }}-${{ steps.new-version.outputs.new }}.tgz
           git add charts/index.yaml
           git add .helm-releases/
-          git commit -m "🚀 Release ${{ matrix.chart }} v${{ steps.new-version.outputs.new }}
+          git commit -m "feat: Release ${{ matrix.chart }} v${{ steps.new-version.outputs.new }}
 
-          - Automated version bump: ${{ github.event.inputs.version_bump || 'patch' }}
+          - Version bump: ${{ github.event.inputs.version_bump || 'patch' }}
           - Chart: ${{ matrix.chart }}
           - Previous version: ${{ steps.current-version.outputs.current }}
-          - New version: ${{ steps.new-version.outputs.new }}"
+          - New version: ${{ steps.new-version.outputs.new }}
 
-          # Always create release branches for chart releases to avoid conflicts
-          echo "Creating release branch for chart release..."
-          RELEASE_BRANCH="release/${{ matrix.chart }}-v${{ steps.new-version.outputs.new }}"
-          git checkout -b "$RELEASE_BRANCH"
-          git push origin "$RELEASE_BRANCH"
-          echo "::notice::Created release branch: $RELEASE_BRANCH. Please create a PR to merge to target branch."
+          Signed-off-by: wiredquill <wiredquill@users.noreply.github.com>"
+
+          # Push to target branch for testing or main
+          TARGET_BRANCH="${{ github.event.inputs.target_branch || 'charts-for-ai-demo-apps' }}"
+          echo "Pushing changes to $TARGET_BRANCH branch..."
+
+          # Switch to target branch
+          git fetch origin
+          git checkout "$TARGET_BRANCH" || git checkout -b "$TARGET_BRANCH" origin/"$TARGET_BRANCH"
+          git merge --no-ff -
+          git push origin "$TARGET_BRANCH"
+
+          echo "::notice::Chart updated in $TARGET_BRANCH branch. Test before merging to main."
 
       - name: Create GitHub Release
         env:
@@ -242,7 +248,7 @@ jobs:
             --notes "## ${{ matrix.chart }} v${{ steps.new-version.outputs.new }}
 
             ### Changes
-            - Automated release of ${{ matrix.chart }}
+            - Release of ${{ matrix.chart }}
             - Version bump: ${{ steps.current-version.outputs.current }} → ${{ steps.new-version.outputs.new }}
 
             ### Installation
@@ -259,7 +265,7 @@ jobs:
   publish-pages:
     needs: release-charts
     runs-on: ubuntu-latest
-    if: needs.release-charts.result == 'success'
+    if: needs.release-charts.result == 'success' && github.event.inputs.target_branch == 'main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
