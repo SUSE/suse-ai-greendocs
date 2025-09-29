@@ -2,7 +2,7 @@ apiVersion: v2
 name: ai-compare
 description: "AI Compare - Side-by-side AI response comparison platform. Features Ollama, Open WebUI, pipelines, and custom chat interface. Built on upstream open-source components with GPU support, observability integration, and security demonstrations. Showcases security differences between upstream and enterprise-hardened container images."
 type: application
-version: 0.1.356
+version: 0.1.357
 appVersion: "1.0.0"
 keywords:
   - ai

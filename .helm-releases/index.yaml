@@ -1,5 +1,38 @@
 apiVersion: v1
 entries:
+  ai-compare:
+  - annotations:
+      category: AI/ML
+      licenses: MIT
+    apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-09-29T16:45:52.948982646Z"
+    description: AI Compare - Side-by-side AI response comparison platform. Features
+      Ollama, Open WebUI, pipelines, and custom chat interface. Built on upstream
+      open-source components with GPU support, observability integration, and security
+      demonstrations. Showcases security differences between upstream and enterprise-hardened
+      container images.
+    digest: 806ef375d98f9dcac225ff80b9e8a80b79ea8eb72afad6b4d71c9cf2ec86ee6f
+    home: https://github.com/wiredquill/ai-demos
+    keywords:
+    - ai
+    - llm
+    - ollama
+    - machine-learning
+    - opentelemetry
+    - observability
+    - demo
+    - comparison
+    maintainers:
+    - email: noreply@example.com
+      name: AI Compare Team
+    name: ai-compare
+    sources:
+    - https://github.com/wiredquill/ai-demos
+    type: application
+    urls:
+    - ai-compare-0.1.357.tgz
+    version: 0.1.357
   ai-compare-suse:
   - annotations:
       category: AI/ML
@@ -8,7 +41,7 @@ entries:
       suse.com/certified: "true"
     apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.645791043Z"
+    created: "2025-09-29T16:45:52.950091847Z"
     description: SUSE AI Compare SUSE Edition - Enterprise AI response comparison
       platform optimized for SUSE environments. Features SUSE BCI images, native SUSE
       Observability integration, NeuVector security demos, and full SUSE cloud-native
@@ -44,7 +77,7 @@ entries:
       licenses: MIT
     apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.648139748Z"
+    created: "2025-09-29T16:45:52.953058366Z"
     description: SUSE AI Compare - Enterprise AI response comparison platform with
       comprehensive observability. Features Ollama, Open WebUI, pipelines, and custom
       chat interface. Built with SUSE-hardened container images, GPU support, and
@@ -75,7 +108,7 @@ entries:
   suse-ai-hr-assistant:
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.674780482Z"
+    created: "2025-09-29T16:45:52.976499814Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -106,7 +139,7 @@ entries:
     version: 0.2.15
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.670801037Z"
+    created: "2025-09-29T16:45:52.97279229Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -137,7 +170,7 @@ entries:
     version: 0.2.14
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.666766071Z"
+    created: "2025-09-29T16:45:52.969266377Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -168,7 +201,7 @@ entries:
     version: 0.2.12
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.664871115Z"
+    created: "2025-09-29T16:45:52.967433364Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -199,7 +232,7 @@ entries:
     version: 0.2.10
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.681784801Z"
+    created: "2025-09-29T16:45:52.982793934Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -230,7 +263,7 @@ entries:
     version: 0.2.7
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.678560295Z"
+    created: "2025-09-29T16:45:52.980189483Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -261,7 +294,7 @@ entries:
     version: 0.2.5
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.67668165Z"
+    created: "2025-09-29T16:45:52.978347775Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -292,7 +325,7 @@ entries:
     version: 0.2.3
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.662968755Z"
+    created: "2025-09-29T16:45:52.965618155Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -323,7 +356,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.66025966Z"
+    created: "2025-09-29T16:45:52.963079879Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -354,7 +387,7 @@ entries:
     version: 0.1.9
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.658190288Z"
+    created: "2025-09-29T16:45:52.961235555Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -385,7 +418,7 @@ entries:
     version: 0.1.7
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.656277939Z"
+    created: "2025-09-29T16:45:52.959372978Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -416,7 +449,7 @@ entries:
     version: 0.1.5
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.653419794Z"
+    created: "2025-09-29T16:45:52.956779824Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -447,7 +480,7 @@ entries:
     version: 0.1.3
   - apiVersion: v2
     appVersion: latest
-    created: "2025-09-25T15:13:52.651268198Z"
+    created: "2025-09-29T16:45:52.954942904Z"
     dependencies:
     - condition: ollama.enabled
       name: ollama
@@ -476,4 +509,4 @@ entries:
     urls:
     - suse-ai-hr-assistant-0.1.1.tgz
     version: 0.1.1
-generated: "2025-09-25T15:13:52.644465392Z"
+generated: "2025-09-29T16:45:52.947809125Z"
