@@ -1,9 +1,10 @@
+annotations:
+  category: AI/ML
+  licenses: MIT
 apiVersion: v2
-name: ai-compare
-description: "AI Compare - Side-by-side AI response comparison platform. Features Ollama, Open WebUI, pipelines, and custom chat interface. Built on upstream open-source components with GPU support, observability integration, and security demonstrations. Showcases security differences between upstream and enterprise-hardened container images."
-type: application
-version: 0.1.358
-appVersion: "1.0.0"
+appVersion: 1.0.0
+description: AI Compare - Side-by-side AI response comparison platform. Features Ollama, Open WebUI, pipelines, and custom chat interface. Built on upstream open-source components with GPU support, observability integration, and security demonstrations. Showcases security differences between upstream and enterprise-hardened container images.
+home: https://github.com/wiredquill/ai-demos
 keywords:
   - ai
   - llm
@@ -13,12 +14,11 @@ keywords:
   - observability
   - demo
   - comparison
-home: https://github.com/wiredquill/ai-demos
+maintainers:
+  - email: noreply@example.com
+    name: AI Compare Team
+name: ai-compare
 sources:
   - https://github.com/wiredquill/ai-demos
-maintainers:
-  - name: AI Compare Team
-    email: noreply@example.com
-annotations:
-  category: AI/ML
-  licenses: MIT
+type: application
+version: 0.1.424
