@@ -11,25 +11,21 @@ description: SUSE AI HR Assistant - Intelligent Employee Support and Policy Mana
 # a dependency of application charts to inject those utilities and functions into the rendering
 # pipeline. Library charts do not define any templates and therefore cannot be deployed.
 type: application
-
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 1.2.8
-
+version: 1.2.9
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "latest"
-
 # Dependencies from SUSE Application Collection
 dependencies:
   - name: ollama
     version: 1.26.0
     repository: oci://dp.apps.rancher.io/charts
     condition: ollama.enabled
-
 keywords:
   - ai
   - llm
@@ -38,11 +34,9 @@ keywords:
   - demo
   - openlit
   - ollama
-
 maintainers:
   - name: SUSE AI Team
     email: ai-team@suse.com
-
 home: https://www.suse.com/products/ai/
 sources:
   - https://github.com/openlit/openlit

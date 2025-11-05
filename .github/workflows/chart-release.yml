@@ -8,7 +8,7 @@ on:
         required: true
         type: choice
         options:
-          - suse-ai-hr-assistant
+          - hr-assistant
           - ai-compare
           - ai-compare-suse
           - ai-compare-opentelemetry
