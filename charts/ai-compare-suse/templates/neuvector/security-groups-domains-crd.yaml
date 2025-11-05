@@ -1,17 +1,9 @@
-{{- if and .Values.neuvector.enabled (.Capabilities.APIVersions.Has "neuvector.com/v1/NvDlpSensor") }}
+{{- if and .Values.neuvector.enabled (.Capabilities.APIVersions.Has "neuvector.com/v1/NvClusterSecurityRule") }}
 ---
 apiVersion: neuvector.com/v1
 kind: NvClusterSecurityRule
 metadata:
-  name: {{ include "ai-compare.fullname" . }}-deepseek-rule
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "ai-compare.labels" . | nindent 4 }}
-    app.component: security
-    security.policy: network
-  annotations:
-    description: "AI Compare security rule for DeepSeek AI service access"
-    demo.type: "network-security"
+  name: deepseek
 spec:
   egress: []
   file: []
@@ -21,26 +13,18 @@ spec:
   target:
     policymode: N/A
     selector:
-      comment: "DeepSeek AI service access control"
+      comment: ""
       criteria:
       - key: address
         op: =
         value: '*.deepseek.com'
-      name: {{ include "ai-compare.fullname" . }}-deepseek
+      name: deepseek
       original_name: ""
 ---
 apiVersion: neuvector.com/v1
 kind: NvClusterSecurityRule
 metadata:
-  name: {{ include "ai-compare.fullname" . }}-gemini-rule
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "ai-compare.labels" . | nindent 4 }}
-    app.component: security
-    security.policy: network
-  annotations:
-    description: "AI Compare security rule for Google Gemini AI service access"
-    demo.type: "network-security"
+  name: gemini
 spec:
   egress: []
   file: []
@@ -50,11 +34,11 @@ spec:
   target:
     policymode: N/A
     selector:
-      comment: "Google Gemini AI service access control"
+      comment: ""
       criteria:
       - key: address
         op: =
-        value: '*.gemini.google.com'
-      name: {{ include "ai-compare.fullname" . }}-gemini
+        value: '*.google.com'
+      name: gemini
       original_name: ""
 {{- end }}

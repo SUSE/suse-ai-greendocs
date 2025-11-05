@@ -59,6 +59,22 @@ questions:
     - "NodePort"
     - "LoadBalancer"
 
+- variable: aiCompare.service.nodePort
+  group: General
+  label: "AI Compare NodePort (Gradio UI)"
+  description: "NodePort for the Gradio UI (port 7860). Only used when Service Type is NodePort."
+  type: "integer"
+  default: 31701
+  show_if: "aiCompare.service.type=NodePort"
+
+- variable: aiCompare.service.httpApiNodePort
+  group: General
+  label: "AI Compare NodePort (HTTP API)"
+  description: "NodePort for the HTTP API server (port 8080). Only used when Service Type is NodePort."
+  type: "integer"
+  default: 31702
+  show_if: "aiCompare.service.type=NodePort"
+
 - variable: neuvector.enabled
   group: General
   label: "Enable SUSE Security (NeuVector)"

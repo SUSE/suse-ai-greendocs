@@ -6,14 +6,18 @@ spec:
   selector:
     app: {{ include "ai-compare.fullname" . }}-app
   ports:
-  # Gradio UI port (7860)
   - protocol: TCP
     port: {{ .Values.aiCompare.service.port }}
     targetPort: {{ .Values.aiCompare.service.port }}
     name: gradio
-  # HTTP API server port (8080) for frontend communication
+{{- if and (eq .Values.aiCompare.service.type "NodePort") .Values.aiCompare.service.nodePort }}
+    nodePort: {{ .Values.aiCompare.service.nodePort }}
+{{- end }}
   - protocol: TCP
     port: {{ .Values.aiCompare.httpApi.port }}
     targetPort: {{ .Values.aiCompare.httpApi.port }}
     name: http-api
+{{- if and (eq .Values.aiCompare.service.type "NodePort") .Values.aiCompare.service.httpApiNodePort }}
+    nodePort: {{ .Values.aiCompare.service.httpApiNodePort }}
+{{- end }}
   type: {{ .Values.aiCompare.service.type }}

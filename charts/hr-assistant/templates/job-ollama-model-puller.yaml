@@ -1,0 +1,92 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "hr-assistant.fullname" . }}-ollama-model-puller
+  labels:
+    {{- include "hr-assistant.labels" . | nindent 4 }}
+    app.component: ollama-model-puller
+  annotations: {}
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: {{ .Values.jobs.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "hr-assistant.labels" . | nindent 8 }}
+        app.component: ollama-model-puller
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "hr-assistant.serviceAccountName" . }}
+      restartPolicy: Never
+      containers:
+      - name: ollama-model-puller
+        image: "dp.apps.rancher.io/containers/ollama:{{ .Values.ollama.image.tag | default "0.11.4-10.88" }}"
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            set -e
+            echo "=== Ollama Model Puller Job Starting ==="
+            echo "Waiting for Ollama service to be ready..."
+
+            # Set OLLAMA_HOST early so ollama list can find the service
+            # The Ollama subchart creates service: {release-name}-ollama
+            OLLAMA_URL="http://{{ .Release.Name }}-ollama:11434"
+            export OLLAMA_HOST="$OLLAMA_URL"
+            echo "Setting OLLAMA_HOST=$OLLAMA_HOST"
+
+            max_retries=60
+            retry_count=0
+
+            while [ $retry_count -lt $max_retries ]; do
+              echo "Attempting to connect to Ollama at $OLLAMA_HOST... (attempt $((retry_count + 1))/$max_retries)"
+              # Try ollama list command to check if service is ready
+              if RESULT=$(ollama list 2>&1); then
+                echo "✅ Ollama service is ready at $OLLAMA_URL"
+                echo "Available models: $RESULT"
+                break
+              fi
+              echo "⏳ Waiting for Ollama service... (attempt $((retry_count + 1))/$max_retries)"
+              sleep 5
+              retry_count=$((retry_count + 1))
+            done
+
+            if [ $retry_count -eq $max_retries ]; then
+              echo "❌ FAILED: Ollama service did not become ready in time (300 seconds)"
+              exit 1
+            fi
+
+            # Pull configured models
+            {{- if .Values.ollama.models.pull }}
+            echo "=== Pulling configured models ==="
+            {{- range .Values.ollama.models.pull }}
+            echo "📥 Pulling model: {{ . }}"
+            if ! ollama pull {{ . }} 2>&1; then
+              echo "⚠️  WARNING: Failed to pull {{ . }}, but continuing with other models"
+            else
+              echo "✅ Successfully pulled {{ . }}"
+            fi
+            {{- end }}
+            {{- else }}
+            echo "⚠️  No models configured in ollama.models.pull"
+            {{- end }}
+
+            # Verify models are available
+            echo "=== Verifying available models ==="
+            ollama list || echo "⚠️  Could not list models"
+
+            echo "=== Ollama Model Puller Job Complete ==="
+        env:
+        - name: OLLAMA_HOST
+          value: ""
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "2Gi"
+          limits:
+            cpu: "2"
+            memory: "8Gi"
