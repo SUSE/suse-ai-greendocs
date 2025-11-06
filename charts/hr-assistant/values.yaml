@@ -1,32 +1,28 @@
-# Default values for genai-observability-demo.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# SUSE AI HR Assistant Demo Configuration
+# Showcases comprehensive LLM observability with OpenLit integration
 
-# Global image pull policy and secrets
+# Global configuration
 imagePullSecrets:
   - name: application-collection
 
-# Endpoints
+# Observability endpoints
 otlpEndpoint: 'http://opentelemetry-collector.opentelemetry-collector.svc.cluster.local:4318'
-collectGpuStats: 'false'
+ollamaEndpoint: 'http://my-hr-assistant-ollama:11434'
+collectGpuStats: 'false'  # Enable GPU metrics for demo
 
-# Model configuration
-model: 'llama3.2'  # Model to use for LLM operations (must be available in Ollama)
-
+# CronJob schedule for automated requests (demo traffic generation)
 schedule: '*/5 * * * *'
 
 # Job cleanup settings
 jobs:
   # Time in seconds after which completed jobs are deleted
-  # Helm will wait for jobs to complete during installation
-  # Lower values make installation finish faster
-  ttlSecondsAfterFinished: 300  # 5 minutes - change to 3600 for 1 hour retention
+  ttlSecondsAfterFinished: 300  # 5 minutes
 
-# SUSE Application Collection Ollama configuration
+# Official SUSE Application Collection Ollama chart configuration
 ollama:
   enabled: true
   image:
-    tag: "0.11.4-10.88"
+    tag: "0.11.4"
   imagePullSecrets:
     - name: application-collection
   gpu:
@@ -39,21 +35,15 @@ ollama:
     requests:
       cpu: "500m"
       memory: "2Gi"
-      nvidia.com/gpu: "1"
     limits:
       cpu: "4"
       memory: "16Gi"
-      nvidia.com/gpu: "1"
   persistence:
     enabled: false
     size: 10Gi
   models:
-    pull:
-      - llama3.2:latest
-      - bge-large:latest
-
-# Image pull policy
-imagePullPolicy: IfNotPresent
+    - llama3.2:1b
+    - bge-large:latest
 
 
 
