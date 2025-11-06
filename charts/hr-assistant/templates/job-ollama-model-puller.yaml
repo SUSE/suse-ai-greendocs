@@ -61,9 +61,9 @@ spec:
             fi
 
             # Pull configured models
-            {{- if .Values.ollama.models.pull }}
+            {{- if .Values.ollama.models }}
             echo "=== Pulling configured models ==="
-            {{- range .Values.ollama.models.pull }}
+            {{- range .Values.ollama.models }}
             echo "📥 Pulling model: {{ . }}"
             if ! ollama pull {{ . }} 2>&1; then
               echo "⚠️  WARNING: Failed to pull {{ . }}, but continuing with other models"
@@ -72,7 +72,7 @@ spec:
             fi
             {{- end }}
             {{- else }}
-            echo "⚠️  No models configured in ollama.models.pull"
+            echo "⚠️  No models configured in ollama.models"
             {{- end }}
 
             # Verify models are available
